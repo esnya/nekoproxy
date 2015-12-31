@@ -1,5 +1,5 @@
 {
-  "name": "reverse-proxy",
+  "name": "beniimo-proxy",
   "version": "1.0.0",
   "description": "Reverse proxy with digest authentication.",
   "main": "index.js",
@@ -9,10 +9,12 @@
   "author": "ukatama",
   "license": "MIT",
   "dependencies": {
+    "connect-session-knex": "^1.0.17",
     "crypto": "0.0.3",
     "express": "^4.13.3",
     "express-session": "^1.12.1",
     "http-proxy": "^1.12.0",
+    "knex": "^0.9.0",
     "mysql": "^2.10.0",
     "passport": "^0.3.2",
     "passport-twitter": "^1.0.3"

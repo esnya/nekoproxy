@@ -6,17 +6,10 @@ const http = require('http');
 
 let app = express();
 let server = http.createServer(app);
-let passport = require('./passport')(require('./db'));
+let passport = require('./passport');
 let proxy = require('./proxy');
 
-app.use(require('express-session')({
-    cookie: {
-        domain: process.env.SERVER_NAME,
-    },
-    resave: true,
-    saveUninitialized: true,
-    secret: process.env.SESSION_SECRET,
-}));
+app.use(require('./session'));
 app.use(passport.initialize());
 app.use(passport.session());
 
