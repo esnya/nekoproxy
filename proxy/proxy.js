@@ -9,6 +9,7 @@ proxy.on('proxyRes', function(proxyRes, req, res) {
     if (req.headers.host && req.headers.origin
             && req.headers.host.match(APP_PTN) && req.headers.origin.match(APP_PTN)) {
         console.log('CORS: ' + req.headers.origin + ' -> ' + req.headers.host);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
     }
 });
