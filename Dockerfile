@@ -2,6 +2,8 @@ FROM node
 MAINTAINER ukatama dev.ukatama@gmail.com
 
 ADD proxy proxy
-RUN cd proxy && npm install
+ADD package.json package.json
+ADD config config
+RUN npm install
 
-ENTRYPOINT cd proxy && node .
+ENTRYPOINT node .
