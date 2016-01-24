@@ -2,7 +2,7 @@
   "name": "beniimo-proxy",
   "version": "1.0.0",
   "description": "Reverse proxy with digest authentication.",
-  "main": "index.js",
+  "main": "proxy",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
