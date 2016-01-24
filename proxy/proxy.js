@@ -1,9 +1,11 @@
 'use strict';
 
+const config = require('config');
+
 let proxy = require('http-proxy').createProxyServer({});
 
 let APP_PTN = new RegExp('^(?:https?:\/\/)?([a-zA-Z0-9-]+)\.'
-        + process.env.SERVER_NAME.replace('.', '\\.') + '$');
+        + config.get('name').replace('.', '\\.') + '$');
 
 proxy.on('proxyRes', function(proxyRes, req, res) {
     if (req.headers.host && req.headers.origin
@@ -24,16 +26,19 @@ const getApp = function(req) {
 
 const getTarget = function(req, proto) {
     let app = getApp(req);
-    if (app) {
-        let addr = process.env[app.toUpperCase() + '_PORT_80_TCP_ADDR'];
-        if (addr) {
-            let target = proto + '://' + addr;
-            console.log('PROXY: ' + proto + '://' + req.headers.host + req.url + ' -> ' + target);
-            return {
-                target: target,
-            };
-        }
-    }
+    if (!app) return;
+
+    let p = config.get('proxy')[app];
+    if (!p) return;
+
+    let addr = p.target;
+    if (!addr) return;
+
+    let target = proto + '://' + addr;
+    console.log('PROXY: ' + proto + '://' + req.headers.host + req.url + ' -> ' + target);
+    return {
+        target: target,
+    };
 };
 
 const response = function(res, code, message) {
@@ -77,25 +82,24 @@ const forwardUser = function(req) {
 
 module.exports.web = function(req, res, next) {
     let target = getTarget(req, 'http');
-    if (!target) {
-        return next();
-    }
+    if (!target) return next();
 
     req.headers['X-Forwarded-From'] = req.socket.remoteAddress;
 
     let app = getApp(req);
-    if (app) {
-        let url = req.url;
-        let ptn = process.env[app.toUpperCase() + '_PUBLIC_URL'];
-        if (ptn && url && url.match(new RegExp(ptn))) {
-            return proxy.web(req, res, target, onError(req, res));
-        }
+    if (!app) return next();
+
+    let p = config.get('proxy')[app];
+    let ptn = proxy && p.public;
+    let url = req.url;
+    if (ptn && url && url.match(new RegExp(ptn))) {
+        return proxy.web(req, res, target, onError(req, res));
     }
 
     if (!req.user) {
         req.session.redirectTo = 'http://' + req.hostname + req.url;
         console.log('AUTH: ' + req.session.redirectTo + ' -> /auth/twitter');
-        return res.redirect('http://' + (process.env.SERVER_NAME || 'localhost') + '/auth/twitter');
+        return res.redirect('http://' + config.get('name') + '/auth/twitter');
     }
 
     forwardUser(req);

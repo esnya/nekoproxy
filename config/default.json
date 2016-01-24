@@ -1,0 +1,15 @@
+{
+    "name": "localhost",
+    "database": {
+        "client": "sqlite3",
+        "connection": {
+            "filename": "tmp/db.sqlite"
+        }
+    },
+    "oauth": {
+    },
+    "session": {
+    },
+    "proxy": {
+    }
+}

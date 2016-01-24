@@ -1,16 +1,18 @@
 'use strict';
 
+const config = require('config');
 const passport = require('passport');
 const TwitterStrategy = require('passport-twitter');
 
 const db = require('./db');
 
-passport.use(new TwitterStrategy({
-    consumerKey: process.env.TWITTER_CONSUMER_KEY,
-    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-    callbackURL: 'http://' + (process.env.SERVER_NAME || 'localhost') + '/auth/twitter/callback',
-},
-function(token, tokenSecret, profile, next) {
+passport.use(new TwitterStrategy(Object.assign(
+    {},
+    config.get('oauth.twitter'),
+    {
+        callbackURL: 'http://' + config.get('name') + '/auth/twitter/callback',
+    }
+), function(token, tokenSecret, profile, next) {
     console.log('Authenticate: twitter:' + profile.id);
     db('users')
         .where({
