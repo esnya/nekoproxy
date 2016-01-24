@@ -1,16 +1,20 @@
-'use strict';
+import config from 'config';
 
-const config = require('config');
+const proxy = require('http-proxy').createProxyServer({});
 
-let proxy = require('http-proxy').createProxyServer({});
-
-let APP_PTN = new RegExp('^(?:https?:\/\/)?([a-zA-Z0-9-]+)\.'
+const APP_PTN = new RegExp('^(?:https?:\/\/)?([a-zA-Z0-9-]+)\.'
         + config.get('name').replace('.', '\\.') + '$');
 
-proxy.on('proxyRes', function(proxyRes, req, res) {
-    if (req.headers.host && req.headers.origin
-            && req.headers.host.match(APP_PTN) && 
-            (req.headers.origin.match(APP_PTN) || req.headers.origin.match(/^https?:\/\/localhost(:[0-9]+)?$/))) {
+proxy.on('proxyRes', (proxyRes, req, res) => {
+    if (
+            req.headers.host
+            && req.headers.origin
+            && req.headers.host.match(APP_PTN)
+            && (
+                req.headers.origin.match(APP_PTN)
+                || req.headers.origin.match(/^https?:\/\/localhost(:[0-9]+)?$/)
+                )
+        ) {
         console.log('CORS: ' + req.headers.origin + ' -> ' + req.headers.host);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
@@ -18,26 +22,28 @@ proxy.on('proxyRes', function(proxyRes, req, res) {
 });
 
 const getApp = function(req) {
-    let host = req.headers.host;
+    const host = req.headers.host;
     if (host && host.match(APP_PTN)) {
         return host.match(APP_PTN)[1];
     }
 };
 
-const getTarget = function(req, proto) {
-    let app = getApp(req);
-    if (!app) return;
+const getTarget = (req, proto) => {
+    const app = getApp(req);
+    if (!app) return false;
 
-    let p = config.get('proxy')[app];
-    if (!p) return;
+    const p = config.get('proxy')[app];
+    if (!p) return false;
 
-    let addr = p.target;
-    if (!addr) return;
+    const addr = p.target;
+    if (!addr) return false;
 
-    let target = proto + '://' + addr;
-    console.log('PROXY: ' + proto + '://' + req.headers.host + req.url + ' -> ' + target);
+    const target = proto + '://' + addr;
+    console.log(
+        `PROXY: ${proto}://${req.headers.host}${req.url} -> ${target}`
+    );
     return {
-        target: target,
+        target,
     };
 };
 
@@ -64,34 +70,34 @@ const onError = function(req, res, sock) {
 };
 
 const forwardUser = function(req) {
-    delete req.headers['username'];
-    delete req.headers['Username'];
-    delete req.headers['USERNAME'];
+    delete req.headers.username;
+    delete req.headers.Username;
+    delete req.headers.USERNAME;
     delete req.headers['Remote-User'];
-    delete req.headers['REDIRECT_REMOTE_USER'];
+    delete req.headers.REDIRECT_REMOTE_USER;
     delete req.headers['X-Forwarded-User'];
 
     if (!req.user) return;
 
     req.headers['WWW-Auth-Type'] = 'digest';
-    req.headers['Username'] = 
+    req.headers.Username = 
         req.headers['Remote-User'] = 
         req.headers['Redirect-Remote-User'] = 
         req.headers['X-Forwarded-User'] = req.user.userid;
 };
 
 module.exports.web = function(req, res, next) {
-    let target = getTarget(req, 'http');
+    const target = getTarget(req, 'http');
     if (!target) return next();
 
     req.headers['X-Forwarded-From'] = req.socket.remoteAddress;
 
-    let app = getApp(req);
+    const app = getApp(req);
     if (!app) return next();
 
-    let p = config.get('proxy')[app];
-    let ptn = proxy && p.public;
-    let url = req.url;
+    const p = config.get('proxy')[app];
+    const ptn = proxy && p.public;
+    const url = req.url;
     if (ptn && url && url.match(new RegExp(ptn))) {
         return proxy.web(req, res, target, onError(req, res));
     }
@@ -108,9 +114,10 @@ module.exports.web = function(req, res, next) {
 };
 
 module.exports.ws = function(req, sock, head) {
-    let target = getTarget(req, 'ws');
+    const target = getTarget(req, 'ws');
     if (target) {
         forwardUser(req);
         proxy.ws(req, sock, head, target, onError(req, null, sock));
-    } else response(res, 404, 'Not Found');
+    }
+    // ToDo: close socket
 };

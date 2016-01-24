@@ -1,12 +1,12 @@
-'use strict';
+import config from 'config';
+import session from 'express-session';
+import ConnectSessionKnex from 'connect-session-knex';
+import db from './db';
 
-const config = require('config');
-const session = require('express-session');
-const KnexSessionStore = require('connect-session-knex')(session);
-const db = require('./db');
+const KnexSessionStore = ConnectSessionKnex(session);
 
 module.exports = session(Object.assign({}, config.get('session'), {
     store: new KnexSessionStore({
         knex: db,
-    })
+    }),
 }));

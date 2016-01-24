@@ -1,10 +1,9 @@
-'use strict';
+/* eslint max-params: [2, 4] */
 
-const config = require('config');
-const passport = require('passport');
-const TwitterStrategy = require('passport-twitter');
-
-const db = require('./db');
+import config from 'config';
+import passport from 'passport';
+import TwitterStrategy from 'passport-twitter';
+import db from './db';
 
 passport.use(new TwitterStrategy(Object.assign(
     {},
@@ -12,7 +11,7 @@ passport.use(new TwitterStrategy(Object.assign(
     {
         callbackURL: 'http://' + config.get('name') + '/auth/twitter/callback',
     }
-), function(token, tokenSecret, profile, next) {
+), (token, tokenSecret, profile, next) => {
     console.log('Authenticate: twitter:' + profile.id);
     db('users')
         .where({
@@ -21,24 +20,26 @@ passport.use(new TwitterStrategy(Object.assign(
             oauth_id: profile.id,
         })
     .first('userid', 'name')
-        .then(function (user) {
-            console.log('Authenticated: twitter:' + profile.id + ' > ' + JSON.stringify(user));
+        .then((user) => {
+            console.log(
+                `Authenticated: twitter: ${profile.id} > ${JSON.stringify(user)}`
+            );
             next(null, user);
         }, next);
 }));
 
-passport.serializeUser(function(user, next) {
-    next(null, user.userid);
-});
+passport.serializeUser((user, next) =>
+    next(null, user.userid)
+);
 
-passport.deserializeUser(function(id, next) {
+passport.deserializeUser((id, next) =>
     db('users')
         .where({
             enabled: true,
             userid: id,
         })
     .first('userid', 'name')
-        .then(user => next(null, user), next);
-});
+    .then((user) => next(null, user), next)
+);
 
 module.exports = passport;

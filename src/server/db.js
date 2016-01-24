@@ -1,4 +1,4 @@
-'use strict';
-
-const config = require('config');
-module.exports = require('knex')(config.get('database'));
+import config from 'config';
+import Knex from 'knex';
+ 
+export default Knex(config.get('database'));

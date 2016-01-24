@@ -1,13 +1,10 @@
-'use strict';
-
-const crypto = require('crypto');
 const express = require('express');
 const http = require('http');
 
-let app = express();
-let server = http.createServer(app);
-let passport = require('./passport');
-let proxy = require('./proxy');
+const app = express();
+const server = http.createServer(app);
+const passport = require('./passport');
+const proxy = require('./proxy');
 
 app.use(require('./session'));
 app.use(passport.initialize());
@@ -20,12 +17,12 @@ app.get('/auth/twitter',
         passport.authenticate('twitter'));
 app.get('/auth/twitter/callback',
         passport.authenticate('twitter', { failureRedirect: '/auth/twitter' }),
-        function(req, res) {
-            let redirectTo = req.session.redirectTo || '/';
+        (req, res) => {
+            const redirectTo = req.session.redirectTo || '/';
             req.session.redirectTo = null;
             return res.redirect(redirectTo);
         });
 
-server.listen(80, function() {
+server.listen(80, () => {
     console.log('Listening on *:80');
 });
