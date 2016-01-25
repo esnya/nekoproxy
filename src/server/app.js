@@ -10,7 +10,7 @@ const Apps = lodash(config.get('apps'))
         util.extendDeep(appConfig, config.get('default'));
 
         const app = result[name] = express();
-        const passport = passports[name];    
+        const passport = passports[name];
 
         app.use(sessions[name]);
 
@@ -19,13 +19,13 @@ const Apps = lodash(config.get('apps'))
 
         app.get(
             '/auth/:provider',
-            (req, ...args) => 
+            (req, ...args) =>
                 passport.authenticate(req.params.provider)(req, ...args)
         );
 
         app.get(
             '/auth/:provider/callback',
-            (req, ...args) => 
+            (req, ...args) =>
             passport.authenticate(req.params.provider, {
                 failureRedirect: `/auth/${req.params.provider}`,
             })(req, ...args),

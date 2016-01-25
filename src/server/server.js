@@ -9,7 +9,7 @@ const Rules = config.get('rules');
 
 export const server = new Server((req, res) => {
     logger.debug('Request', req.headers.host, req.url);
-    
+
     const {
         host,
     } = req.headers;

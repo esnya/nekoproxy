@@ -10,7 +10,7 @@ export default lodash(config.get('apps'))
         const logger = getLogger(`[${name}]`);
         const knex = result[name] = Knex(appConfig.get('database'));
 
-        const createTable = (table, creator) => 
+        const createTable = (table, creator) =>
             knex.schema.hasTable(table)
                 .then(
                     (exists) => exists
