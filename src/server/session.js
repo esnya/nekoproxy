@@ -1,12 +1,24 @@
-import config from 'config';
+import config, { util } from 'config';
 import session from 'express-session';
 import ConnectSessionKnex from 'connect-session-knex';
-import db from './db';
+import lodash from 'lodash';
+import knex from './knex';
 
 const KnexSessionStore = ConnectSessionKnex(session);
 
-module.exports = session(Object.assign({}, config.get('session'), {
-    store: new KnexSessionStore({
-        knex: db,
-    }),
-}));
+export default lodash(config.get('apps'))
+    .transform((result, appConfig, name) => {
+        util.extendDeep(appConfig, config.get('default'));
+
+        result[name] = session({
+            ...appConfig.get('session'),
+            cookie: {
+                ...appConfig.get('session').cookie,
+                domain: appConfig.get('domain'),
+            },
+            store: new KnexSessionStore({
+                knex: knex[name],
+            }),
+        });
+    })
+    .value();

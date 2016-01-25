@@ -1,15 +1,26 @@
 {
-    "name": "localhost",
-    "database": {
-        "client": "sqlite3",
-        "connection": {
-            "filename": "tmp/db.sqlite"
+    "apps": {
+    },
+    "default": {
+        "domain": "localhost",
+        "database": {
+            "client": "sqlite3",
+            "connection": {
+                "filename": "tmp/db.sqlite"
+            }
+        },
+        "passport": {
+        },
+        "session": {
+            "resave": true,
+            "saveUninitialized": true
         }
     },
-    "oauth": {
+    "mock": false,
+    "server": {
+        "host": "localhost",
+        "port": 8080
     },
-    "session": {
-    },
-    "proxy": {
+    "rules": {
     }
 }
