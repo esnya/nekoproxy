@@ -1,9 +1,10 @@
 import config from 'config';
 import { Server } from 'http';
 import { byName, byDomain } from './app';
-import logger from './logger';
+import { getLogger } from './logger';
 import { ws } from './proxy';
 
+const logger = getLogger('[SERVER]');
 const Rules = config.get('rules');
 
 export const server = new Server((req, res) => {

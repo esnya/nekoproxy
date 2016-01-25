@@ -1,6 +1,7 @@
 import config from 'config';
 import { createProxyServer } from 'http-proxy';
 import { getLogger } from './logger';
+import sessions from './session';
 
 const rules = config.get('rules');
 const server = createProxyServer();
@@ -23,48 +24,48 @@ server.on('proxyRes', (proxyRes, req, res) => {
     res.setHeader('Access-Control-Allow-Origin', origin);
 });
 
-const get = ({headers}) =>
-    headers.host && rules[headers.host];
-
-const forwardUser = (req) => {
-    req.headers['X-Forwarded-User'] = req.user && req.user.id || '';
-};
-
-export const web = (req, res, next) => {
+const proxy = (onProxy) => (req, res, next) => {
     const from = `http://${req.headers.host}${req.url}`;
-    const rule = get(req);
+
+    const rule = rules[req.headers.host];
     if (!rule) {
-        logger.info(`Proxy not found`, from);
+        logger.info('Route not found', req.headers.host);
         return next();
     }
 
-    const publicMatcher = rule.public && new RegExp(rule.public);
-    const {
-        url,
-        user,
-        session,
-    } = req;
+    (new Promise((resolve) => {
+        if (req.session) return resolve();
+        sessions[rule.app](req, res || {}, resolve);
+    }))
+    .then(() => {
+        if (!(req.user
+                || rule.public
+                && req.url.match(new RegExp(rule.public))
+                || req.session.passport
+                && req.session.passport.user
+        )) {
+            req.session.redirectTo = from;
+            if (res) {
+                return res.redirect(
+                    `http://${config.get('apps').get(rule.app).get('domain')}/auth/twitter`
+                );
+            }
+            return next();
+        }
 
-    if (!user && !(publicMatcher && publicMatcher.exec(url))) {
-        logger.debug(rule.app);
-        const to = 
-            `http://${config.get('apps').get(rule.app || 'default').get('domain')}/auth/twitter`;
-        logger.info('AuthRedirect', from, 'to', to);
-        session.redirectTo = from;
-        return res.redirect(to);
-    }
-
-    forwardUser(req);
-
-    logger.info(
-        'Proxy',
-        from, 'to',
-        rule.proxy
-    );
-
-    return server.web(req, res, rule.get('proxy'), (e) => res.send(e)); 
+        logger.info('PROXY', from, 'to', rule.get('proxy.target'));
+        onProxy(rule.get('proxy'));
+    })
+    .catch((error) => {
+        logger.error(error);
+        next();
+    });
 };
 
-export const ws = (req, sock, head) => {
-    console.log(req & sock && head && null);
-};
+export const web = (req, res, next) =>
+    proxy((rule) => server.web(req, res, rule, next))(req, res, next);
+
+export const ws = (req, sock, head) =>
+    proxy(
+        (rule) => server.ws(req, sock, head, rule)
+    )(req, null, () => sock.end());
