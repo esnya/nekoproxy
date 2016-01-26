@@ -2,6 +2,7 @@
     "apps": {
     },
     "default": {
+        "name": "App",
         "domain": "localhost",
         "database": {
             "client": "sqlite3",

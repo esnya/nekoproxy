@@ -46,9 +46,7 @@ const proxy = (onProxy) => (req, res, next) => {
         )) {
             req.session.redirectTo = from;
             if (res) {
-                return res.redirect(
-                    `http://${config.get('apps').get(rule.app).get('domain')}/login/twitter`
-                );
+                return res.redirect('/login');
             }
             return next();
         }
