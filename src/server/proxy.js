@@ -7,11 +7,11 @@ const rules = config.get('rules');
 const logger = getLogger('[PROXY]');
 const server = createProxyServer({});
 
-const authenticate = (req, res = {}, next) => {
+const authenticate = (req, res, next) => {
     const rule = rules[req.headers.host];
     if (!rule) return next();
 
-    if (!req.session) sessions[rule.app](req, res, () => null);
+    if (!req.session) sessions[rule.app](req, res || {}, () => null);
     if (!req.session) return next();
 
     return next(
@@ -21,10 +21,12 @@ const authenticate = (req, res = {}, next) => {
     );
 };
 
-server.on('proxyReq', (proxyReq, req) =>
-    authenticate(req, {}, (id) => {
+server.on('proxyReq', (proxyReq, req, res) =>
+    authenticate(req, res, (id) => {
         if (id) {
             proxyReq.setHeader('X-Forwarded-User', id);
+        } else {
+            proxyReq.removeHeader('X-Forwarded-User');
         }
     })
 );
