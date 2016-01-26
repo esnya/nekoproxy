@@ -39,7 +39,7 @@ Object.keys(process.env)
         } else if (path === 'MYSQL_PORT_3306_TCP_ADDR') {
             appConfig.database.client = 'mysql'
             appConfig.database.connection.host = value;
-        } else if (path === 'MYSQL_ROOT_PASSWORD') {
+        } else if (path === 'MYSQL_DATABASE') {
             appConfig.database.client = 'mysql'
             appConfig.database.connection.database = value;
         } else if (path === 'MYSQL_ROOT_PASSWORD') {
