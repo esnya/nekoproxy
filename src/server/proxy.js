@@ -7,6 +7,28 @@ const rules = config.get('rules');
 const logger = getLogger('[PROXY]');
 const server = createProxyServer({});
 
+const authenticate = (req, res = {}, next) => {
+    const rule = rules[req.headers.host];
+    if (!rule) return next();
+
+    if (!req.session) sessions[rule.app](req, res, () => null);
+    if (!req.session) return next();
+
+    return next(
+        req.session
+        && req.session.passport
+        && req.session.passport.user
+    );
+};
+
+server.on('proxyReq', (proxyReq, req) =>
+    authenticate(req, {}, (id) => {
+        if (id) {
+            proxyReq.setHeader('X-Forwarded-User', id);
+        }
+    })
+);
+
 server.on('proxyRes', (proxyRes, req, res) => {
     const {
         host,
@@ -33,30 +55,16 @@ const proxy = (onProxy) => (req, res, next) => {
         return next();
     }
 
-    (new Promise((resolve) => {
-        if (req.session) return resolve();
-        sessions[rule.app](req, res || {}, resolve);
-    }))
-    .then(() => {
-        if (!(req.user
-                || rule.public
-                && req.url.match(new RegExp(rule.public))
-                || req.session.passport
-                && req.session.passport.user
-        )) {
-            req.session.redirectTo = from;
+    authenticate(req, res, (id) => {
+        if (!id && !(rule.public || req.url.match(new RegExp(rule.public)))) {
             if (res) {
+                req.session.redirectTo = from;
                 return res.redirect('/login');
             }
             return next();
         }
-
         logger.info('PROXY', from, 'to', rule.get('proxy.target'));
         onProxy(rule.get('proxy'));
-    })
-    .catch((error) => {
-        logger.error(error);
-        next();
     });
 };
 
