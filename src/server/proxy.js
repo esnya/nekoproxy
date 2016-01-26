@@ -4,8 +4,8 @@ import { getLogger } from './logger';
 import sessions from './session';
 
 const rules = config.get('rules');
-const server = createProxyServer();
 const logger = getLogger('[PROXY]');
+const server = createProxyServer({});
 
 server.on('proxyRes', (proxyRes, req, res) => {
     const {
@@ -17,10 +17,10 @@ server.on('proxyRes', (proxyRes, req, res) => {
     const match = origin.match(/https?:\/\/(.*)$/);
     if (!match) return;
 
-    if (!(match[1] in Proxy) && match[1] !== 'localhost') return;
+    if (!(match[1] in rules) && match[1] !== 'localhost') return;
 
-    logger.info('CORS', 'from', origin, 'to', host);
-    res.setHeader('Access-Control-Allow-Credentials', 'ture');
+    logger.info('CORS', origin, 'on', host);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', origin);
 });
 
