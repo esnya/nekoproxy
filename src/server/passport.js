@@ -17,7 +17,7 @@ export default lodash(config.get('apps'))
             .map((providerConfig, providerName) => new Strategy[providerName]({
                     ...providerConfig,
                     callbackURL:
-                        `http://${appConfig.get('domain')}/auth/${providerName}/callback`,
+                        `http://${appConfig.get('domain')}/login/${providerName}/callback`,
                 },
                 (token, tokenSecret, profile, next) => {
                         logger.info('Authenticate', providerName, profile.id);

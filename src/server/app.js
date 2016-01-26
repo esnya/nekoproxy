@@ -17,17 +17,18 @@ const Apps = lodash(config.get('apps'))
         app.use(passport.initialize());
         app.use(passport.session());
 
+        app.get('/login', ({}, res) => res.redirect('/login/twitter'));
         app.get(
-            '/auth/:provider',
+            '/login/:provider',
             (req, ...args) =>
                 passport.authenticate(req.params.provider)(req, ...args)
         );
 
         app.get(
-            '/auth/:provider/callback',
+            '/login/:provider/callback',
             (req, ...args) =>
             passport.authenticate(req.params.provider, {
-                failureRedirect: `/auth/${req.params.provider}`,
+                failureRedirect: `/login`,
             })(req, ...args),
             (req, res) => {
                 const redirectTo = req.session.redirectTo || '/';

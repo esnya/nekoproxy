@@ -1,3 +1,7 @@
 require('source-map-support').install();
 require('./server');
-require('./mock');
+
+const config = require('config');
+if (config.get('mock')) {
+    require('./mock');
+}
