@@ -3,7 +3,7 @@ MAINTAINER ukatama dev.ukatama@gmail.com
 
 ADD beniimo-dev     app/beniimo-dev
 ADD src             app/src
-CMD mkdir           app/tmp
+RUN mkdir           app/tmp
 ADD views           app/views
 ADD .babelrc        app/.babelrc
 ADD .eslintrc       app/.eslintrc
