@@ -50,7 +50,7 @@ export default lodash(config.get('apps'))
                     enabled: true,
                     id,
                 })
-            .first('userid', 'name')
+            .first('id', 'name')
             .then((user) => next(null, user), next);
         });
     })
