@@ -21,15 +21,15 @@ const authenticate = (req, res, next) => {
     );
 };
 
-server.on('proxyReq', (proxyReq, req, res) =>
+server.on('proxyReq', (proxyReq, req, res) => {
     authenticate(req, res, (id) => {
         if (id) {
             proxyReq.setHeader('X-Forwarded-User', id);
         } else {
             proxyReq.removeHeader('X-Forwarded-User');
         }
-    })
-);
+    });
+});
 
 server.on('proxyRes', (proxyRes, req, res) => {
     const {
@@ -58,9 +58,10 @@ const proxy = (onProxy) => (req, res, next) => {
     }
 
     authenticate(req, res, (id) => {
-        if (!id && !(rule.public || req.url.match(new RegExp(rule.public)))) {
+        if (!id && !(rule.public && req.url.match(new RegExp(rule.public)))) {
             if (res) {
                 req.session.redirectTo = from;
+                logger.info('Not authed on', from);
                 return res.redirect('/login');
             }
             return next();
