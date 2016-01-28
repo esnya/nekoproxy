@@ -1,5 +1,6 @@
 import config from 'config';
 import { createProxyServer } from 'http-proxy';
+import { get } from './etcd';
 import { getLogger } from './logger';
 import sessions from './session';
 
@@ -66,8 +67,20 @@ const proxy = (onProxy) => (req, res, next) => {
             }
             return next();
         }
-        logger.info('PROXY', from, 'to', rule.get('proxy.target'));
-        onProxy(rule.get('proxy'));
+
+        (
+            rule.has('etcd')
+                ? get(rule.get('etcd'))
+                : Promise.resolve(rule.get('proxy'))
+        )
+        .then((p) => {
+            logger.info('PROXY', from, 'to', p.target);
+            return onProxy(p);
+        })
+        .catch((e) => {
+            logger.error(e);
+            return next();
+        });
     });
 };
 

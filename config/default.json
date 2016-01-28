@@ -17,6 +17,11 @@
             "saveUninitialized": true
         }
     },
+    "etcd": {
+        "enabled": false,
+        "hostname": "127.0.0.1",
+        "port": 4001
+    },
     "mock": false,
     "server": {
         "host": "localhost",
