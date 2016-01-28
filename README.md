@@ -1,2 +1,2 @@
-# beniimo-proxy
-Beniimo-TRPG front end HTTP proxy with Twitter SSO
+# nekoproxy
+NekoRPG front-end reverse proxy with SNS-SSO.

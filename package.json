@@ -1,7 +1,7 @@
 {
-  "name": "beniimo-proxy",
+  "name": "nekoproxy",
   "version": "1.0.0",
-  "description": "Reverse proxy with digest authentication.",
+  "description": "NekoRPG front-end reverse proxy with SNS-SSO.",
   "main": "lib/server",
   "scripts": {
     "start": "node .",
