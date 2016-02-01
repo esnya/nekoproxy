@@ -69,7 +69,7 @@ const proxy = (onProxy) => (req, res, next) => {
     authenticate(req, res, (id) => {
         if (!id && !(rule.public && req.url.match(new RegExp(rule.public)))) {
             if (res) {
-                req.session.redirectTo = from;
+                req.session.redirectTo = from.replace(/\/favicon\.ico$/, '/');
                 logger.info('Not authed on', from);
                 return res.redirect('/login');
             }
