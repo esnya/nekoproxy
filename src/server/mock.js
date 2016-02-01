@@ -37,15 +37,19 @@ lodash(config.get('rules'))
                     <script src="https://cdn.socket.io/socket.io-1.4.3.js"></script>
                 </head>
                 <body>
+                    <button id="connect">connect</button>
                     <input id="input">
                     <button id="send">send</button>
                     <div id="list"></div>
                     <script>
-                        var socket = io('/', {
-                            transports: ['websocket'],
-                        });
-                        socket.on('message', function(message) {
-                            document.getElementById('list').innerHTML += '<br>' + message;
+                        var socket;
+                        document.getElementById('connect').addEventListener('click', function() {
+                            socket = io('/', {
+                                transports: ['websocket'],
+                            });
+                            socket.on('message', function(message) {
+                                document.getElementById('list').innerHTML += '<br>' + message;
+                            });
                         });
                         document.getElementById('send').addEventListener('click', function() {
                             socket.emit('message', document.getElementById('input').value);

@@ -12,7 +12,15 @@ const authenticate = (req, res, next) => {
     const rule = rules[req.headers.host];
     if (!rule) return next();
 
-    if (!req.session) sessions[rule.app](req, res || {}, () => null);
+    if (!req.session) {
+        return sessions[rule.app](req, res || {}, () =>{
+            next(
+                req.session
+                && req.session.passport
+                && req.session.passport.user
+            );
+        });
+    }
     if (!req.session) return next();
 
     return next(
@@ -90,4 +98,12 @@ export const web = (req, res, next) =>
 export const ws = (req, sock, head) =>
     proxy(
         (rule) => server.ws(req, sock, head, rule)
-    )(req, null, () => sock.end());
+    )(req, null, () =>{
+        sock.write([
+            'HTTP/1.1 401 Unauthorized',
+            '',
+            'Connection: close',
+            '',
+        ].join('\r\n'));
+        sock.end();
+    });
