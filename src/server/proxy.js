@@ -5,6 +5,7 @@ import { getLogger } from './logger';
 import sessions from './session';
 
 const rules = config.get('rules');
+const apps = config.get('apps');
 const logger = getLogger('[PROXY]');
 const server = createProxyServer({});
 
@@ -64,12 +65,22 @@ const proxy = (onProxy) => (req, res, next) => {
         return next();
     }
 
+    const app = apps[rule.app];
+    if (!app) {
+        logger.info('App not found', req.headers.host);
+        return next();
+    }
+
     authenticate(req, res, (id) => {
         if (!id && !(rule.public && req.url.match(new RegExp(rule.public)))) {
             if (res) {
-                req.session.redirectTo = from.replace(/\/favicon\.ico$/, '/');
-                logger.info('Not authed on', from);
-                return res.redirect('/login');
+                const afterAuth = from.replace(/\/favicon\.ico$/, '/');
+                const to = `http://${app.domain}/login`;
+
+                logger.info('Auth redirect ->', to, '->', afterAuth);
+
+                req.session.redirectTo = afterAuth;
+                return res.redirect(to);
             }
             return next();
         }
