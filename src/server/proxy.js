@@ -14,19 +14,17 @@ const authenticate = (req, res, next) => {
 
     if (!req.session) {
         return sessions[rule.app](req, res || {}, () =>{
-            next(
-                req.session
-                && req.session.passport
-                && req.session.passport.user
+            next(req.session &&
+                req.session.passport &&
+                req.session.passport.user
             );
         });
     }
     if (!req.session) return next();
 
-    return next(
-        req.session
-        && req.session.passport
-        && req.session.passport.user
+    return next(req.session &&
+        req.session.passport &&
+        req.session.passport.user
     );
 };
 
