@@ -10,9 +10,12 @@
                 "filename": "tmp/db.sqlite"
             }
         },
+        "redis": {
+        },
         "passport": {
         },
         "session": {
+            "store": "database",
             "resave": true,
             "saveUninitialized": true
         }

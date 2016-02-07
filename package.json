@@ -36,6 +36,7 @@
     "babel-preset-react": "^6.3.13",
     "babel-preset-stage-2": "^6.3.13",
     "browserify": "^13.0.0",
+    "connect-redis": "^3.0.2",
     "eslint-plugin-react": "^3.16.0",
     "gulp": "^3.9.0",
     "gulp-babel": "^6.1.1",
