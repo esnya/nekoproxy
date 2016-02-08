@@ -1,4 +1,0 @@
----
-extends: "./beniimo-dev/.eslintrc"
-rules:
-    newline-after-var: 0
