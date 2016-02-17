@@ -1,1 +1,3 @@
-require('nekodev').gulp(require('gulp'), {});
+require('nekodev').gulp({
+    browser: false,
+});
