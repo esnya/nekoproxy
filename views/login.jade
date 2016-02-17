@@ -1,8 +1,6 @@
 doctype html
 html
   head
-    title!= `Login - ${title}`
+    title= `Login - ${title}`
     style html, body, #app { width: 100%; margin: 0; paddin: 0 }
-  body(data-browser=data)
-    div#app
-    script(src="/login/script.js")
+  body(data-browser=data)!= body

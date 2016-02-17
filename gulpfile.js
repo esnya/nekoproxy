@@ -1,1 +1,1 @@
-require('./nekodev').gulp(require('gulp'), {});
+require('nekodev').gulp(require('gulp'), {});

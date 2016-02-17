@@ -2,6 +2,9 @@ import config, { util } from 'config';
 import express from 'express';
 import lodash from 'lodash';
 import { join } from 'path';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { Login } from '../components/Login';
 import passports from './passport';
 import { web } from './proxy';
 import sessions from './session';
@@ -26,15 +29,15 @@ const Apps = lodash(config.get('apps'))
             return handler(req, res, next);
         };
 
+        const login = renderToStaticMarkup(
+            <Login providers={Object.keys(appConfig.passport)} />
+        );
+
         app.get('/login', onlyDomain(({}, res) => res.render('login', {
             title: appConfig.get('name'),
-            data: JSON.stringify({
-                providers: Object.keys(appConfig.passport),
-            }),
+            body: login,
         })));
-        app.get('/login/script.js', onlyDomain(({}, res) =>
-            res.sendFile(join(__dirname, '../..', 'dist/js/browser.js'))
-        ));
+
         app.get(
             '/login/:provider',
             onlyDomain((req, {}, next) => {
