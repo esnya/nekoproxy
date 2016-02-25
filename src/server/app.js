@@ -2,14 +2,12 @@
 /* eslint global-require: 0 */
 
 import { forEach, transform } from 'lodash';
-import ConnectSessionKnex from 'connect-session-knex';
 import express from 'express';
-import session from 'express-session';
-import Knex from 'knex';
 import { getLogger } from 'log4js';
 import { Passport } from 'passport';
 import path from 'path';
 
+import { session } from './session';
 import { render } from './page';
 
 export class App {
@@ -37,15 +35,9 @@ export class App {
             next(null, id && { id })
         );
 
-        const knex = this.knex = new Knex(config.database);
-        const KnexSessionStore = ConnectSessionKnex(session);
-
         const app = this.app = express();
 
-        app.use(session({
-            ...config.session,
-            store: new KnexSessionStore({ knex }),
-        }));
+        app.use(session(config));
         app.use(passport.initialize());
         app.use(passport.session());
 

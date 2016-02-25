@@ -6,8 +6,8 @@ import { Server } from 'http';
 import lodash from 'lodash';
 import log4js from 'log4js';
 import IO from 'socket.io';
-import sessions from './session';
 import url from 'url';
+import { session } from './session';
 
 lodash(config.get('routes'))
     .map((rule) => ({
@@ -24,7 +24,7 @@ lodash(config.get('routes'))
 
         const app = express();
 
-        app.use(sessions[appConfig.app]);
+        app.use(session(config.get('apps').get(appConfig.app)));
 
         app.get('/socket', (req, res) => {
             res.send(`
