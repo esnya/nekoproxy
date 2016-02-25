@@ -1,37 +1,88 @@
-import config from 'config';
-import { Server } from 'http';
-import { byName, byDomain } from './app';
-import { getLogger } from './logger';
-import { ws } from './proxy';
+import { Server as HttpServer } from 'http';
+import ProxyServer from 'http-proxy';
+import { getLogger } from 'log4js';
+import { createApps } from './app';
+import { Router } from './router';
 
-const logger = getLogger('[SERVER]');
-const Rules = config.get('rules');
+export class Server extends HttpServer {
+    constructor(config = {}) {
+        super((req, res) => this.onRequest(req, res));
 
-export const server = new Server((req, res) => {
-    const {
-        host,
-    } = req.headers;
+        this.logger = getLogger('[server]');
+        this.apps = createApps(config);
+        this.proxy = new ProxyServer();
+        this.router = new Router(config);
 
-    const rule = Rules[host];
-    const app = rule ? byName(rule.app || 'default') : byDomain(host);
+        this.on('upgrade', (...args) => this.onUpgrade(...args));
+        this.proxy.on('proxyRes', (...args) => this.onProxyRes(...args));
 
-    const next = () => {
-        logger.error('Proxy not found:', req.url, req.headers);
-        res.socket.end();
-    };
+        this.listen(config.server, () => this.onListen());
+    }
 
-    if (!app) return next();
+    resolveRoute(req, res = null, cors = true) {
+        return this.router.route(req.headers.host, req.url).then((route) => {
+            if (!route || !(route.app in this.apps)) {
+                this.logger.debug('404', req.headers.host, req.url);
+                if (res) {
+                    res.writeHead(404);
+                    res.end('Not Found');
+                }
+                return Promise.reject('Not Found');
+            }
 
-    return app.handle(req, res, next);
-});
+            if (cors && req.headers.origin) {
+                const m = (/^https?:\/\/([^:\/]+)(:([0-9]+))?$/)
+                    .exec(req.headers.origin);
+                if (m) {
+                    return this.resolveRoute(req, null, false)
+                        .then(() => {
+                            req.cors = true;
+                            return route;
+                        })
+                        .catch(() => route);
+                }
+            }
 
-server.on('upgrade', ws);
+            return route;
+        });
+    }
 
-server.listen(config.get('server'), () => {
-    const address = server.address();
-    const host = address.familiy === 'IPv6'
-        ? `[${address.address}]`
-        : address.address;
+    onListen() {
+        const {
+            address,
+            port,
+        } = this.address();
 
-    logger.info(`Listening on ${host}:${address.port}`);
-});
+        this.logger.info(`Listening on ${address} ${port}`);
+    }
+
+    onUpgrade(req, socket, head) {
+        this.resolveRoute(req).then((route) => {
+            this.proxy.ws(req, socket, head, route);
+        });
+    }
+
+    onRequest(req, res) {
+        this.logger.debug('Request', req.headers.host, req.url);
+
+        this.resolveRoute(req, res).then((route) => {
+            const app = this.apps[route.app];
+            app.handle(req, res, () => this.proxy.web(req, res, {
+                target: route.target,
+            }));
+        });
+    }
+
+    onProxyRes(proxyRes, req, res) {
+        if (req.cors) {
+            const {
+                host,
+                origin,
+            } = req.headers;
+
+            this.logger.info('CORS', origin, 'on', host);
+            res.setHeader('Access-Control-Allow-Credentials', 'true');
+            res.setHeader('Access-Control-Allow-Origin', origin);
+        }
+    }
+}

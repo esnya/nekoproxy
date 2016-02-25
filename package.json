@@ -31,7 +31,7 @@
     "passport-twitter": "^1.0.3",
     "react": "^0.14.6",
     "react-dom": "^0.14.6",
-    "request-promise": "^2.0.0",
+    "request-promise": "^2.0.1",
     "source-map-support": "^0.4.0",
     "sqlite3": "^3.1.1"
   },

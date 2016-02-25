@@ -9,16 +9,14 @@ import IO from 'socket.io';
 import sessions from './session';
 import url from 'url';
 
-lodash(config.get('rules'))
-    .map((rule, key) => ({
-        app: rule.get('app') || 'default',
+lodash(config.get('routes'))
+    .map((rule) => ({
+        app: rule.app || 'default',
         name: [
-            rule.get('app'),
-            key.replace(new RegExp(
-                `.${config.get('apps').get(rule.get('app')).get('domain')}$`
-            ), ''),
+            rule.app,
+            rule.host,
         ].join('-'),
-        port: url.parse(rule.get(`proxy.target`)).port,
+        port: url.parse(rule.target).port,
     }))
     .uniqBy('port')
     .forEach((appConfig) => {

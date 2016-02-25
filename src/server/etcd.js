@@ -1,55 +1,35 @@
-import config from 'config';
-import { getLogger } from 'log4js';
 import request from 'request-promise';
 
-const logger = getLogger('[etcd]');
+export class Etcd {
+    constructor(config) {
+        this.origin = `http://${config.host}:${config.port}`;
+        this.cache = {};
+    }
 
-const {
-    hostname,
-    port,
-} = config.get('etcd');
+    watch(key, node) {
+        this.cache[key] = node;
 
-const cache = {};
-
-const watch = (target) => {
-    logger.info('Watching', target);
-
-    request({
-        uri: `http://${hostname}:${port}/v2/keys/${target}?wait=true`,
-        json: true,
-    })
-    .then((res) => {
-        const value = res.node.value;
-
-        logger.info('Update', target, cache[target], ' > ', value);
-
-        cache[target] = value;
-
-        return watch(target);
-    });
-};
-
-export const get = (target) => {
-    if ((target in cache) && cache[target]) {
-        return Promise.resolve({
-            target: `http://${cache[target]}`,
+        request({
+            json: true,
+            uri: `${this.origin}/${key}?wait=true`,
+        }).then((next) => {
+            this.watch(key, next);
+        }).catch(() => {
+            this.cache[key] = false;
         });
     }
 
-    logger.info('Get', target);
+    get(key, watch = false) {
+        if (watch && (key in this.cache) && this.cache[key] !== false) {
+            return Promise.resolve(this.cache[key]);
+        }
 
-    return request({
-        uri: `http://${hostname}:${port}/v2/keys/${target}`,
-        json: true,
-    })
-    .then((res) => {
-        const value = res.node.value;
-
-        cache[target] = value;
-        watch(target);
-
-        return {
-            target: `http://${value}`,
-        };
-    });
-};
+        return request({
+            json: true,
+            uri: `${this.origin}/${key}`,
+        }).then((node) => {
+            if (watch) this.watch(key, node);
+            return node;
+        });
+    }
+}

@@ -1,84 +1,112 @@
-import config, { util } from 'config';
+/* eslint max-params: [2, 4] */
+/* eslint global-require: 0 */
+
+import { forEach, transform } from 'lodash';
+import ConnectSessionKnex from 'connect-session-knex';
 import express from 'express';
-import lodash from 'lodash';
-import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { Login } from '../components/Login';
-import passports from './passport';
-import { web } from './proxy';
-import sessions from './session';
+import session from 'express-session';
+import Knex from 'knex';
+import { getLogger } from 'log4js';
+import { Passport } from 'passport';
+import path from 'path';
 
-const Apps = lodash(config.get('apps'))
-    .transform((result, appConfig, name) => {
-        util.extendDeep(appConfig, config.get('default'));
+import { render } from './page';
 
-        const app = result[name] = express();
-        const passport = passports[name];
+export class App {
+    constructor(config) {
+        this.logger = getLogger(`[app-${config.name}]`);
 
-        app.use(sessions[name]);
+        const passport = this.passport = new Passport();
 
+        forEach(config.passport, (value, key) => {
+            const Strategy = require(`passport-${key}`).Strategy;
+
+            passport.use(new Strategy({
+                ...value,
+                callbackURL: `/login/callback/${key}`,
+            }, (token, tokenSecret, profile, next) => {
+                this.logger.debug(token, tokenSecret, profile);
+                next(null, { id: profile.username });
+            }));
+        });
+
+        passport.serializeUser((user, next) =>
+            next(null, user && user.id)
+        );
+        passport.deserializeUser((id, next) =>
+            next(null, id && { id })
+        );
+
+        const knex = this.knex = new Knex(config.database);
+        const KnexSessionStore = ConnectSessionKnex(session);
+
+        const app = this.app = express();
+
+        app.use(session({
+            ...config.session,
+            store: new KnexSessionStore({ knex }),
+        }));
         app.use(passport.initialize());
         app.use(passport.session());
 
         app.set('view engine', 'jade');
+        app.set('views', path.join(__dirname, '../..', 'views'));
 
-        const domain = appConfig.get('domain');
-        const onlyDomain = (handler) => (req, res, next) => {
-            if (req.headers.host !== domain) return next();
-            return handler(req, res, next);
-        };
+        app.get('/login/callback/:provider', (req, res, next) => {
+            if (req.user) return next();
+            passport.authenticate(req.params.provider, {
+                successRedirect: '/',
+                failureRedirect: '/login',
+            })(req, res, next);
+        });
 
-        const login = renderToStaticMarkup(
-            <Login providers={Object.keys(appConfig.passport)} />
-        );
+        app.get('/login/:provider', (req, res, next) => {
+            if (req.user) return next();
+            passport.authenticate(req.params.provider)(req, res, next);
+        });
 
-        app.get('/login', onlyDomain((req, res) => res.render('login', {
-            title: appConfig.get('name'),
-            body: login,
-        })));
+        app.get('/login', (req, res, next) => {
+            if (req.user) return next();
 
-        app.get(
-            '/login/:provider',
-            onlyDomain((req, res, next) => {
-                if (!req.session.redirectTo) {
-                    req.session.redirectTO =
-                        `http://${req.headers.host}/`;
-                }
-                return next();
-            }),
-            onlyDomain((req, ...args) =>
-                passport.authenticate(req.params.provider)(req, ...args)
-            )
-        );
+            return res.render('static', {
+                title: 'Login',
+                body: render('Login', {
+                    providers: Object.keys(config.passport),
+                }),
+            });
+        });
 
-        app.get(
-            '/login/:provider/callback',
-            onlyDomain((req, ...args) =>
-                passport.authenticate(req.params.provider, {
-                    failureRedirect: `/login`,
-                })(req, ...args)
-            ),
-            onlyDomain((req, res) => {
-                const redirectTo = req.session.redirectTo || '/';
-                req.session.redirectTo = null;
-                return res.redirect(redirectTo);
-            })
-        );
+        app.get('/logout', (req, res, next) => {
+            if (!req.user) return next();
 
-        app.get('/logout', onlyDomain((req, res) => {
             req.logout();
-            res.redirect('/');
-        }));
+            return res.redirect('/');
+        });
 
-        app.use(web);
-    })
-    .value();
+        app.use((req, res, next) => {
+            if (req.user) return next();
+            res.redirect('/login');
+        });
+    }
 
-export const byName = (name) => Apps[name];
+    handle(req, res, next) {
+        return this.app.handle(req, res, (err) => {
+            if (err) {
+                this.logger.error(err);
+                return;
+            }
+            next();
+        });
+    }
+}
 
-const Domains = lodash(Apps)
-    .transform((result, app, name) => {
-        result[config.get('apps').get(name).get('domain')] = app;
-    })
-    .value();
-export const byDomain = (domain) =>  Domains[domain];
+/**
+ * Create all App instances from config.
+ * @param{object} config - Configuration object.
+ * @return{object} Instance of Apps.
+ */
+export function createApps(config) {
+    return transform(config.apps, (result, value, key) => {
+        result[key] = new App(value);
+    });
+}

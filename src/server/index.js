@@ -1,7 +1,8 @@
-require('source-map-support').install();
-require('./server');
+/* eslint global-require: 0 */
 
-const config = require('config');
-if (config.get('mock')) {
+require('source-map-support').install();
+require('./nekoproxy');
+
+if (require('config').get('mock')) {
     require('./mock');
 }
