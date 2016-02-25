@@ -19,6 +19,7 @@ describe('Server', () => {
     let server;
     const apps = {
         app1: new App(),
+        app2: new App(),
     };
     it('listens as a http server', () => {
         getLogger.mockReturnValue(new Logger());
@@ -140,5 +141,85 @@ describe('Server', () => {
                         })
                 )
             );
+    });
+
+    pit('sets cors flag', () => {
+        const req = new http.IncomingMessage();
+        req.headers = {
+            host: 'app1.example.com',
+            origin: 'http://app2.example.com',
+        };
+
+        server.router.route.mockReturnValueOnce(Promise.resolve({
+            app: 'app1',
+            target: 'http://localhost:8001',
+        }));
+        server.router.route.mockReturnValueOnce(Promise.resolve({
+            app: 'app2',
+            target: 'http://localhost:8002',
+        }));
+
+        return server.resolveRoute(req)
+            .then(() => {
+                expect(req.cors).toBe(true);
+            });
+    });
+
+    pit('does not set CORS flag to external origin', () => {
+        const req = new http.IncomingMessage();
+        req.headers = {
+            host: 'app1.example.com',
+            origin: 'http://external.example.com',
+        };
+
+        server.router.route.mockReturnValueOnce(Promise.resolve({
+            app: 'app1',
+            target: 'http://localhost:8001',
+        }));
+        server.router.route.mockReturnValueOnce(Promise.resolve(null));
+
+        return server.resolveRoute(req)
+            .then(() => {
+                expect(req.cors).not.toBe(true);
+            });
+    });
+
+    it('sets CORS headers', () => {
+        const req = new http.IncomingMessage();
+        req.headers = {
+            host: 'app1.example.com',
+            origin: 'http://app2.example.com',
+        };
+        const res = new http.ServerResponse();
+        const proxyRes= new http.ServerResponse();
+
+        req.cors = true;
+
+        server.onProxyRes(proxyRes, req, res);
+
+        let calls = proxyRes.setHeader.mock.calls;
+        expect(calls.length).toBe(2);
+        expect(calls).toEqual([
+            ['Access-Control-Allow-Credentials', 'true'],
+            ['Access-Control-Allow-Origin', 'http://app2.example.com'],
+        ]);
+    });
+
+    it('does not set CORS headers to external origin', () => {
+        const req = new http.IncomingMessage();
+        req.headers = {
+            host: 'app1.example.com',
+            origin: 'http://external.example.com',
+        };
+        const res = new http.ServerResponse();
+        const proxyRes= new http.ServerResponse();
+
+        req.cors = false;
+
+        proxyRes.setHeader.mockClear();
+
+        server.onProxyRes(proxyRes, req, res);
+
+        expect(proxyRes.setHeader).not.toBeCalled();
     });
 });

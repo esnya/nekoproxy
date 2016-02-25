@@ -81,8 +81,8 @@ export class Server extends HttpServer {
             } = req.headers;
 
             this.logger.info('CORS', origin, 'on', host);
-            res.setHeader('Access-Control-Allow-Credentials', 'true');
-            res.setHeader('Access-Control-Allow-Origin', origin);
+            proxyRes.setHeader('Access-Control-Allow-Credentials', 'true');
+            proxyRes.setHeader('Access-Control-Allow-Origin', origin);
         }
     }
 }
