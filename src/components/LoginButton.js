@@ -1,5 +1,5 @@
 import { RaisedButton } from 'material-ui';
-import React from 'react';
+import React, { PropTypes } from 'react';
 
 const Colors = {
     twitter: {
@@ -13,10 +13,16 @@ export const LoginButton = (props) => {
         provider,
         ...otherProps,
     } = props;
-    return <RaisedButton
+    return (
+        <RaisedButton
             {...otherProps}
             {...Colors[provider]}
+            linkButton
             href={`/login/${provider}`}
             label={provider}
-            linkButton={true} />;
+        />
+    );
+};
+LoginButton.propTypes = {
+    provider: PropTypes.string.isRequired,
 };

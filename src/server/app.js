@@ -1,7 +1,6 @@
 import config, { util } from 'config';
 import express from 'express';
 import lodash from 'lodash';
-import { join } from 'path';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Login } from '../components/Login';
@@ -33,14 +32,14 @@ const Apps = lodash(config.get('apps'))
             <Login providers={Object.keys(appConfig.passport)} />
         );
 
-        app.get('/login', onlyDomain(({}, res) => res.render('login', {
+        app.get('/login', onlyDomain((req, res) => res.render('login', {
             title: appConfig.get('name'),
             body: login,
         })));
 
         app.get(
             '/login/:provider',
-            onlyDomain((req, {}, next) => {
+            onlyDomain((req, res, next) => {
                 if (!req.session.redirectTo) {
                     req.session.redirectTO =
                         `http://${req.headers.host}/`;

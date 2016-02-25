@@ -28,7 +28,7 @@ lodash(config.get('rules'))
 
         app.use(sessions[appConfig.app]);
 
-        app.get('/socket', ({}, res) => {
+        app.get('/socket', (req, res) => {
             res.send(`
                 <!DOCTYPE html>
                 <html>
