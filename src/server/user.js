@@ -14,6 +14,32 @@ export class User {
 export class UserModel {
     constructor(knex) {
         this.knex = knex;
+
+        this.initTable();
+    }
+
+    initTable() {
+        const schema = this.knex.schema;
+        if (!schema) return;
+
+        schema
+            .hasTable('users')
+            .then((exists) => {
+                if (!exists) {
+                    return schema.createTable('users', (table) => {
+                        table.string('id').primary();
+                        table.string('name').notNullable();
+                        table.string('oauth_provider');
+                        table.string('oauth_id');
+
+                        table.timestamp('created').notNullable();
+                        table.timestamp('modified').notNullable();
+                        table.timestamp('deleted');
+
+                        table.unique(['oauth_provider', 'oauth_id']);
+                    });
+                }
+            });
     }
 
     /**
