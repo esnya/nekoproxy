@@ -3,6 +3,7 @@
 import config from 'config';
 import express from 'express';
 import { Server } from 'http';
+import Knex from 'knex';
 import lodash from 'lodash';
 import log4js from 'log4js';
 import IO from 'socket.io';
@@ -24,7 +25,10 @@ lodash(config.get('routes'))
 
         const app = express();
 
-        app.use(session(config.get('apps').get(appConfig.app)));
+        app.use(session(
+            new Knex(config.get('apps').get(appConfig.app).database),
+            config.get('apps').get(appConfig.app)
+        ));
 
         app.get('/socket', (req, res) => {
             res.send(`

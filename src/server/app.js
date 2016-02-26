@@ -1,18 +1,24 @@
 /* eslint max-params: [2, 4] */
 /* eslint global-require: 0 */
 
-import { forEach, transform } from 'lodash';
 import express from 'express';
+import Knex from 'knex';
+import { forEach, transform } from 'lodash';
 import { getLogger } from 'log4js';
 import { Passport } from 'passport';
 import path from 'path';
 
-import { session } from './session';
 import { render } from './page';
+import { session } from './session';
+import { UserModel } from './user';
 
 export class App {
     constructor(config) {
         this.logger = getLogger(`[app-${config.name}]`);
+
+        const knex = this.knex = new Knex(config.database);
+
+        const users = this.users = new UserModel(knex);
 
         const passport = this.passport = new Passport();
 
@@ -23,21 +29,30 @@ export class App {
                 ...value,
                 callbackURL: `/login/callback/${key}`,
             }, (token, tokenSecret, profile, next) => {
-                this.logger.debug(token, tokenSecret, profile);
-                next(null, { id: profile.username });
+                users
+                    .find({
+                        oauth_provider: key,
+                        oauth_id: profile.id,
+                    })
+                    .then((user) => next(null, user))
+                    .catch(next);
             }));
         });
 
-        passport.serializeUser((user, next) =>
-            next(null, user && user.id)
-        );
-        passport.deserializeUser((id, next) =>
-            next(null, id && { id })
-        );
+        passport.serializeUser((user, next) => {
+            user.serialize()
+                .then((id) => next(null, id))
+                .catch(next);
+        });
+        passport.deserializeUser((id, next) => {
+            users.deserialize(id)
+                .then((user) => next(null, user))
+                .catch(next);
+        });
 
         const app = this.app = express();
 
-        app.use(session(config));
+        app.use(session(knex, config));
         app.use(passport.initialize());
         app.use(passport.session());
 
@@ -77,6 +92,8 @@ export class App {
 
         app.use((req, res, next) => {
             if (req.user) return next();
+
+            req.session.loginRedirect = req.url;
             res.redirect('/login');
         });
     }
