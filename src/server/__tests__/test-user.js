@@ -2,6 +2,7 @@ jest.dontMock('../user');
 
 describe('User', () => {
     const {
+        USER_NOT_FOUND,
         User,
         UserModel,
     } = require('../user');
@@ -9,18 +10,24 @@ describe('User', () => {
     const query = {
         where: jest.genMockFn(),
         first: jest.genMockFn(),
+        insert: jest.genMockFn(),
         then: jest.genMockFn(),
     };
     beforeEach(() => {
         query.where.mockClear();
         query.first.mockClear();
         query.then.mockClear();
+        query.insert.mockClear();
 
         query.where.mockReturnValue(query);
         query.first.mockReturnValue(query);
     });
 
     const knex = jest.genMockFn();
+    knex.fn = {
+        now: jest.genMockFn(),
+    };
+
     beforeEach(() => {
         knex.mockClear();
         knex.mockReturnValue(query);
@@ -75,8 +82,7 @@ describe('User', () => {
                 throw new Error('Promise resolved');
             })
             .catch((e) => {
-                expect(e).toBeDefined();
-                expect(e).not.toBeNull();
+                expect(e).toEqual(USER_NOT_FOUND);
             });
     });
 
@@ -115,5 +121,32 @@ describe('User', () => {
             .catch((e) => {
                 throw new Error('Promise rejected with: ' + e);
             });
+    });
+
+    pit('creates new user', () => {
+        query.insert.mockReturnValue(Promise.resolve([0]));
+        query.then.mockImpl((callback) =>
+            Promise.resolve({
+                id: 'id4',
+            }).then(callback)
+        );
+
+        const p = model.create({
+            id: 'id4',
+            oauth_id: 'oauthid',
+            oauth_provider: 'twitter',
+        });
+
+        expect(query.insert).toBeCalledWith({
+            id: 'id4',
+            oauth_id: 'oauthid',
+            oauth_provider: 'twitter',
+        });
+
+        return p.then((user) => {
+            expect(user instanceof User).toBe(true);
+            expect(user.id).toEqual('id4');
+            expect(user.name).not.toBeDefined();
+        });
     });
 });

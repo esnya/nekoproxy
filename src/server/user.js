@@ -1,3 +1,5 @@
+export const USER_NOT_FOUND = 'USER_NOT_FOUND';
+
 export class User {
     constructor(data) {
         this.id = data.id;
@@ -26,8 +28,19 @@ export class UserModel {
             .first()
             .then((user) => user
                 ? new User(user)
-                : Promise.reject(new Error('User not found'))
+                : Promise.reject(USER_NOT_FOUND)
             );
+    }
+
+    create(data) {
+        return this
+            .knex('users')
+            .insert({
+                ...data,
+                created: this.knex.fn.now(),
+                modified: this.knex.fn.now(),
+            })
+            .then(() => this.find({ id: data.id }));
     }
 
     deserialize(id) {

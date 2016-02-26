@@ -10,7 +10,7 @@ import path from 'path';
 
 import { render } from './page';
 import { session } from './session';
-import { UserModel } from './user';
+import { USER_NOT_FOUND, UserModel } from './user';
 
 export class App {
     constructor(config) {
@@ -33,6 +33,15 @@ export class App {
                     .find({
                         oauth_provider: key,
                         oauth_id: profile.id,
+                    })
+                    .catch((e) => {
+                        if (e !== USER_NOT_FOUND) return e;
+                        return users.create({
+                            id: profile.username,
+                            name: profile.displayName,
+                            oauth_provider: key,
+                            oauth_id: profile.id,
+                        });
                     })
                     .then((user) => next(null, user))
                     .catch(next);
