@@ -14,6 +14,7 @@ export class Server extends HttpServer {
         this.router = new Router(config);
 
         this.on('upgrade', (...args) => this.onUpgrade(...args));
+        this.proxy.on('proxyReq', (...args) => this.onProxyReq(...args));
         this.proxy.on('proxyRes', (...args) => this.onProxyRes(...args));
 
         this.listen(config.server, () => this.onListen());
@@ -71,6 +72,14 @@ export class Server extends HttpServer {
                 target: route.target,
             }));
         });
+    }
+
+    onProxyReq(proxyReq, req, res) {
+        if (req.user && req.user.id) {
+            proxyReq.setHeader('X-Forwarded-User', req.user.id);
+        } else {
+            proxyReq.removeHeader('X-Forwarded-User');
+        }
     }
 
     onProxyRes(proxyRes, req, res) {

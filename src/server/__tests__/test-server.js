@@ -222,4 +222,39 @@ describe('Server', () => {
 
         expect(res.setHeader).not.toBeCalled();
     });
+
+    it('forwards user id', () => {
+        const proxyReq= new http.ClientRequest();
+        const req = new http.IncomingMessage();
+        const res = new http.ServerResponse();
+
+        req.user = {
+            id: 'user-id',
+            name: 'user-name',
+        };
+
+        proxyReq.setHeader.mockClear();
+
+        server.onProxyReq(proxyReq, req, res);
+
+        expect(proxyReq.setHeader)
+            .toBeCalledWith('X-Forwarded-User', 'user-id');
+    });
+
+    it('removes header of user id if unauthorized', () => {
+        const proxyReq= new http.ClientRequest();
+        const req = new http.IncomingMessage();
+        const res = new http.ServerResponse();
+
+        req.user = {};
+
+        proxyReq.setHeader.mockClear();
+        proxyReq.removeHeader.mockClear();
+
+        server.onProxyReq(proxyReq, req, res);
+
+        expect(proxyReq.setHeader).not.toBeCalled();
+        expect(proxyReq.removeHeader)
+            .toBeCalledWith('X-Forwarded-User');
+    });
 });
