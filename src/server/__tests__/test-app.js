@@ -3,11 +3,12 @@ jest.autoMockOff();
 jest.dontMock('express');
 require('express');
 
+jest.dontMock('../app');
+
 jest.mock('http');
 jest.mock('passport');
 jest.mock('../page');
-
-jest.dontMock('../app');
+jest.mock('../session');
 
 describe('App', () => {
     const {
@@ -15,11 +16,24 @@ describe('App', () => {
         ServerResponse,
     } = require('http');
 
-    const ConnectSessionKnex = require('connect-session-knex');
-    ConnectSessionKnex.mockReturnValue(jest.genMockFn());
+    jest.setMock('../session', {
+        session: jest.genMockFn()
+            .mockReturnValue(jest.genMockFn()),
+    });
+
+    /*
+    const {
+        transform,
+    } = require('lodash');
+    */
 
     const Passport = require('passport').Passport;
-    const App = require('../app').App;
+
+    jest.dontMock('lodash');
+    const {
+        createApps,
+        App,
+    } = require('../app');
 
     let app, auth;
     it('can be instanced', () => {
@@ -57,5 +71,47 @@ describe('App', () => {
         app.handle(req, res, next);
 
         expect(next).not.toBeCalled();
+    });
+
+    it('creates apps from object', () => {
+        Passport
+            .prototype
+            .authenticate
+            .mockReturnValue(auth);
+        Passport
+            .prototype
+            .initialize
+            .mockReturnValue(jest.genMockFn());
+        Passport
+            .prototype
+            .session
+            .mockReturnValue(jest.genMockFn());
+
+        const config = {
+            apps: {
+                app1: {
+                    name: 'App1',
+                    signUp: false,
+                },
+                app2: {
+                    name: 'App2',
+                },
+            },
+            default: {
+                signUp: true,
+            },
+        };
+
+        const apps = createApps(config);
+
+        expect(Object.keys(apps)).toEqual(['app1', 'app2']);
+        expect(apps.app1.config).toEqual({
+            name: 'App1',
+            signUp: false,
+        });
+        expect(apps.app2.config).toEqual({
+            name: 'App2',
+            signUp: true,
+        });
     });
 });

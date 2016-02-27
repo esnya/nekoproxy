@@ -3,7 +3,7 @@
 
 import express from 'express';
 import Knex from 'knex';
-import { forEach, transform } from 'lodash';
+import { defaultsDeep, forEach, transform } from 'lodash';
 import { getLogger } from 'log4js';
 import { Passport } from 'passport';
 import path from 'path';
@@ -14,12 +14,11 @@ import { USER_NOT_FOUND, UserModel } from './user';
 
 export class App {
     constructor(config) {
+        this.config = config;
         this.logger = getLogger(`[app-${config.name}]`);
 
         const knex = this.knex = new Knex(config.database);
-
         const users = this.users = new UserModel(knex);
-
         const passport = this.passport = new Passport();
 
         forEach(config.passport, (value, key) => {
@@ -125,6 +124,6 @@ export class App {
  */
 export function createApps(config) {
     return transform(config.apps, (result, value, key) => {
-        result[key] = new App(value);
+        result[key] = new App(defaultsDeep(value, config.default));
     });
 }
