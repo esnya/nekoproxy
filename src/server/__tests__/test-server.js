@@ -197,7 +197,7 @@ describe('Server', () => {
 
         server.onProxyRes(proxyRes, req, res);
 
-        let calls = proxyRes.setHeader.mock.calls;
+        let calls = res.setHeader.mock.calls;
         expect(calls.length).toBe(2);
         expect(calls).toEqual([
             ['Access-Control-Allow-Credentials', 'true'],
@@ -220,6 +220,6 @@ describe('Server', () => {
 
         server.onProxyRes(proxyRes, req, res);
 
-        expect(proxyRes.setHeader).not.toBeCalled();
+        expect(res.setHeader).not.toBeCalled();
     });
 });
