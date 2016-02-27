@@ -144,7 +144,7 @@ describe('User', () => {
             });
     });
 
-    pit('serializes self into id', () => {
+    pit('serializes into id', () => {
         query.then.mockImpl((callback) =>
             Promise.resolve({
                 id: 'id2',
@@ -154,7 +154,7 @@ describe('User', () => {
 
         return model
             .find({ id: 'id2' })
-            .then((user) => user.serialize())
+            .then((user) => model.serialize(user))
             .then((id) => expect(id).toEqual('id2'))
             .catch((e) => {
                 throw new Error('Promise rejected with: ' + e);

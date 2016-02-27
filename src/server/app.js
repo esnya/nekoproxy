@@ -48,9 +48,7 @@ export class App {
         });
 
         passport.serializeUser((user, next) => {
-            user.serialize()
-                .then((id) => next(null, id))
-                .catch(next);
+            next(null, user.id);
         });
         passport.deserializeUser((id, next) => {
             users.deserialize(id)

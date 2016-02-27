@@ -5,10 +5,6 @@ export class User {
         this.id = data.id;
         this.name = data.name;
     }
-
-    serialize() {
-        return Promise.resolve(this.id);
-    }
 }
 
 export class UserModel {
@@ -67,6 +63,10 @@ export class UserModel {
                 modified: this.knex.fn.now(),
             })
             .then(() => this.find({ id: data.id }));
+    }
+
+    serialize(user) {
+        return Promise.resolve(user.id);
     }
 
     deserialize(id) {
