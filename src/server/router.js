@@ -11,7 +11,7 @@ export class Router {
             ? this
                 .etcd
                 .get('routes', true)
-                .then((routes) => JSON.parse(routes))
+                .then((node) => JSON.parse(node.value))
             : Promise.resolve(this.routes);
     }
 
@@ -41,9 +41,9 @@ export class Router {
                 }
 
                 return this.etcd.get(`backends/${route.etcd}`, true)
-                    .then((target) => ({
+                    .then((node) => ({
                         ...route,
-                        target,
+                        target: node.value,
                     }));
             });
     }

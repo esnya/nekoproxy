@@ -63,7 +63,7 @@ describe('Router', () => {
 
     pit('gets backends from etcd', () => {
         etcd.get.mockReturnValueOnce(
-            Promise.resolve('http://etcd-target-app2.example.com')
+            Promise.resolve({ value: 'http://etcd-target-app2.example.com' })
         );
 
         return router.route('app2.example.com', '/').then((route) => {
@@ -93,7 +93,9 @@ describe('Router', () => {
         expect(Etcd.mock.instances.length).toBe(1);
         const etcd2 = Etcd.mock.instances[0];
 
-        etcd2.get.mockReturnValueOnce(Promise.resolve(JSON.stringify(routes)));
+        etcd2.get.mockReturnValueOnce(
+            Promise.resolve({ value: JSON.stringify(routes) })
+        );
         return erouter.route('app1.example.com', '/public/path')
             .then((route) => {
                 expect(etcd2.get).toBeCalledWith('routes', true);

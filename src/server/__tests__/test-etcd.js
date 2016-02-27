@@ -14,12 +14,12 @@ describe('Etcd', () => {
 
     pit('gets value', () => {
         request.mockReturnValueOnce(Promise.resolve({
-            value: 'test-value1',
+            node: { value: 'test-value1' },
         }));
         return etcd.get('test-key1').then((value) => {
             expect(request)
                 .toBeCalledWith({
-                    uri: 'http://etcd.example.com:4001/test-key1',
+                    uri: 'http://etcd.example.com:4001/v2/keys/test-key1',
                     json: true,
                 });
             expect(value.value).toEqual('test-value1');
@@ -33,7 +33,7 @@ describe('Etcd', () => {
         request.mockImpl(({ uri }) => {
             if (!uri.match(/wait=true$/)) {
                 return Promise.resolve({
-                    value: 'test-value2',
+                    node: { value: 'test-value2' },
                 });
             }
 
@@ -48,12 +48,13 @@ describe('Etcd', () => {
                 expect(request.mock.calls.length).toBe(2);
                 expect(request.mock.calls[0][0])
                     .toEqual({
-                        uri: 'http://etcd.example.com:4001/test-key2',
+                        uri: 'http://etcd.example.com:4001/v2/keys/test-key2',
                         json: true,
                     });
                 expect(request.mock.calls[1][0])
                     .toEqual({
-                        uri: 'http://etcd.example.com:4001/test-key2?wait=true',
+                        uri:
+                            'http://etcd.example.com:4001/v2/keys/test-key2?wait=true',
                         json: true,
                     });
 
@@ -70,7 +71,7 @@ describe('Etcd', () => {
             .then(() => {
                 request.mockClear();
                 mockPromise[0].resolve({
-                    value: 'test-value3',
+                    node: { value: 'test-value3' },
                 });
                 mockPromise.shift();
             })
@@ -79,7 +80,8 @@ describe('Etcd', () => {
                 expect(request.mock.calls.length).toBe(1);
                 expect(request.mock.calls[0][0])
                     .toEqual({
-                        uri: 'http://etcd.example.com:4001/test-key2?wait=true',
+                        uri:
+                            'http://etcd.example.com:4001/v2/keys/test-key2?wait=true',
                         json: true,
                     });
                 expect(node.value).toEqual('test-value3');

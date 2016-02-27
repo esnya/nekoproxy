@@ -11,9 +11,9 @@ export class Etcd {
 
         request({
             json: true,
-            uri: `${this.origin}/${key}?wait=true`,
+            uri: `${this.origin}/v2/keys/${key}?wait=true`,
         }).then((next) => {
-            this.watch(key, next);
+            this.watch(key, next.node);
         }).catch(() => {
             this.cache[key] = false;
         });
@@ -26,10 +26,10 @@ export class Etcd {
 
         return request({
             json: true,
-            uri: `${this.origin}/${key}`,
-        }).then((node) => {
-            if (watch) this.watch(key, node);
-            return node;
+            uri: `${this.origin}/v2/keys/${key}`,
+        }).then((data) => {
+            if (watch) this.watch(key, data.node);
+            return data.node;
         });
     }
 }
