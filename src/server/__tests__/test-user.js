@@ -24,6 +24,10 @@ describe('User', () => {
     });
 
     const knex = jest.genMockFn();
+    knex.schema = {
+        hasTable: jest.genMockFn(),
+        createTable: jest.genMockFn(),
+    };
     knex.fn = {
         now: jest.genMockFn(),
     };
@@ -34,8 +38,62 @@ describe('User', () => {
     });
 
     let model;
-    it('can be instanced', () => {
+    pit('initializes table', () => {
+        knex.schema.hasTable.mockReturnValueOnce(Promise.resolve(false));
+
         model = new UserModel(knex);
+
+        return Promise.resolve()
+            .then(() => {
+                expect(knex.schema.hasTable).toBeCalledWith('users');
+
+                expect(knex.schema.createTable).toBeCalled();
+
+                const call = knex.schema.createTable.mock.calls[0];
+                expect(call[0]).toEqual('users');
+
+                const primary = [];
+                const col = (name) => ({
+                    primary: jest.genMockFn()
+                        .mockImpl(() => primary.push(name)),
+                    notNullable: jest.genMockFn(),
+                });
+                const table = {
+                    string: jest.genMockFn().mockImpl(col),
+                    timestamp: jest.genMockFn().mockImpl(col),
+                    unique: jest.genMockFn(),
+                };
+                call[1](table);
+
+                expect(
+                    table
+                        .string
+                        .mock
+                        .calls
+                        .map((call) => call[0])
+                ).toEqual([
+                    'id',
+                    'name',
+                    'oauth_provider',
+                    'oauth_id',
+                ]);
+
+                expect(
+                    table
+                        .timestamp
+                        .mock
+                        .calls
+                        .map((call) => call[0])
+                ).toEqual([
+                    'created',
+                    'modified',
+                    'deleted',
+                ]);
+
+                expect(primary).toEqual(['id']);
+                expect(table.unique)
+                    .toBeCalledWith(['oauth_provider', 'oauth_id']);
+            });
     });
 
     pit('finds user by (oauth_provider, oauth_id)', () => {
