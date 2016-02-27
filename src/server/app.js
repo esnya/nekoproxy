@@ -68,7 +68,8 @@ export class App {
         app.set('views', path.join(__dirname, '../..', 'views'));
 
         app.get('/login/callback/:provider', (req, res, next) => {
-            if (req.user) return next();
+            if (req.user || req.public) return next();
+
             passport.authenticate(req.params.provider, {
                 successRedirect: '/',
                 failureRedirect: '/login',
@@ -76,12 +77,13 @@ export class App {
         });
 
         app.get('/login/:provider', (req, res, next) => {
-            if (req.user) return next();
+            if (req.user || req.public) return next();
+
             passport.authenticate(req.params.provider)(req, res, next);
         });
 
         app.get('/login', (req, res, next) => {
-            if (req.user) return next();
+            if (req.user || req.public) return next();
 
             return res.render('static', {
                 title: 'Login',
@@ -92,14 +94,14 @@ export class App {
         });
 
         app.get('/logout', (req, res, next) => {
-            if (!req.user) return next();
+            if (!req.user || req.public) return next();
 
             req.logout();
             return res.redirect('/');
         });
 
         app.use((req, res, next) => {
-            if (req.user) return next();
+            if (req.user || req.public) return next();
 
             req.session.loginRedirect = req.url;
             res.redirect('/login');

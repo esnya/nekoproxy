@@ -66,12 +66,15 @@ export class Server extends HttpServer {
     onRequest(req, res) {
         this.logger.debug('Request', req.headers.host, req.url);
 
-        this.resolveRoute(req, res).then((route) => {
-            const app = this.apps[route.app];
-            app.handle(req, res, () => this.proxy.web(req, res, {
-                target: route.target,
-            }));
-        });
+        return this.resolveRoute(req, res).then((route) => {
+                const app = this.apps[route.app];
+
+                req.public = !!route.public;
+
+                app.handle(req, res, () => this.proxy.web(req, res, {
+                    target: route.target,
+                }));
+            });
     }
 
     onProxyReq(proxyReq, req, res) {

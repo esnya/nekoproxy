@@ -257,4 +257,25 @@ describe('Server', () => {
         expect(proxyReq.removeHeader)
             .toBeCalledWith('X-Forwarded-User');
     });
+
+    pit('sets public flag', () => {
+        const req = new http.IncomingMessage();
+        const res = new http.ServerResponse();
+
+        req.headers = {
+            host: 'app1.example.com',
+        };
+
+        server.router.route.mockReturnValueOnce(Promise.resolve({
+            app: 'app1',
+            target: 'http://localhost:8001',
+            public: true,
+        }));
+
+        return server
+            .onRequest(req, res)
+            .then(() => {
+                expect(req.public).toBe(true);
+            });
+    });
 });
