@@ -1,4 +1,5 @@
 /* eslint max-len: 0 */
+/* eslint node/no-unpublished-import: 0 */
 
 import config from 'config';
 import express from 'express';
