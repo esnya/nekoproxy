@@ -16,6 +16,7 @@ export class Server extends HttpServer {
         this.on('upgrade', (...args) => this.onUpgrade(...args));
         this.proxy.on('proxyReq', (...args) => this.onProxyReq(...args));
         this.proxy.on('proxyRes', (...args) => this.onProxyRes(...args));
+        this.proxy.on('error', (e) => this.logger.error(e));
 
         this.listen(config.server, () => this.onListen());
     }
