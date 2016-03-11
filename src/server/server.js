@@ -29,6 +29,7 @@ export class Server extends HttpServer {
                     res.writeHead(404);
                     res.end('Not Found');
                 }
+
                 return Promise.reject('Not Found');
             }
 
@@ -39,6 +40,7 @@ export class Server extends HttpServer {
                     return this.resolveRoute(req, null, false)
                         .then(() => {
                             req.cors = true;
+
                             return route;
                         })
                         .catch(() => route);
@@ -78,7 +80,7 @@ export class Server extends HttpServer {
             });
     }
 
-    onProxyReq(proxyReq, req, res) {
+    onProxyReq(proxyReq, req) {
         if (req.user && req.user.id) {
             proxyReq.setHeader('X-Forwarded-User', req.user.id);
         } else {

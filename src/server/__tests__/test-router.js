@@ -96,6 +96,7 @@ describe('Router', () => {
         etcd2.get.mockReturnValueOnce(
             Promise.resolve({ value: JSON.stringify(routes) })
         );
+
         return erouter.route('app1.example.com', '/public/path')
             .then((route) => {
                 expect(etcd2.get).toBeCalledWith('routes', true);

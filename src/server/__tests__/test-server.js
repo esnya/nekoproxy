@@ -69,9 +69,12 @@ describe('Server', () => {
         return Promise.resolve();
     });
 
-    it('calls app.handle', () => {
-        expect(apps.app1.handle).toBeCalled();
-    });
+    pit('calls app.handle', () =>
+        Promise.resolve()
+            .then(() => {
+                expect(apps.app1.handle).toBeCalled();
+            })
+    );
 
     let proxy;
     it('calls proxy after authorized', () => {

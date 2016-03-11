@@ -24,12 +24,6 @@ describe('App', () => {
             .mockReturnValue(genMockMiddleware()),
     });
 
-    /*
-    const {
-        transform,
-    } = require('lodash');
-    */
-
     const Passport = require('passport').Passport;
 
     jest.dontMock('lodash');
@@ -91,7 +85,6 @@ describe('App', () => {
         expect(next).not.toBeCalled();
         expect(res.statusCode).toBe(401);
     });
-
 
     it('creates apps from object', () => {
         Passport

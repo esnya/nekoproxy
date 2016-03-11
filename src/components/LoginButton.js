@@ -13,6 +13,7 @@ export const LoginButton = (props) => {
         provider,
         ...otherProps,
     } = props;
+
     return (
         <RaisedButton
             {...otherProps}
