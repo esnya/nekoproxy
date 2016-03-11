@@ -16,9 +16,12 @@ describe('App', () => {
         ServerResponse,
     } = require('http');
 
+    const genMockMiddleware = () =>
+        jest.genMockFn().mockImpl((req, res, next) => next());
+
     jest.setMock('../session', {
         session: jest.genMockFn()
-            .mockReturnValue(jest.genMockFn()),
+            .mockReturnValue(genMockMiddleware()),
     });
 
     /*
@@ -37,7 +40,7 @@ describe('App', () => {
 
     let app, auth;
     it('can be instanced', () => {
-        auth = jest.genMockFn();
+        auth = genMockMiddleware;
         Passport
             .prototype
             .authenticate
@@ -46,11 +49,11 @@ describe('App', () => {
         Passport
             .prototype
             .initialize
-            .mockReturnValueOnce(jest.genMockFn());
+            .mockReturnValueOnce(genMockMiddleware());
         Passport
             .prototype
             .session
-            .mockReturnValueOnce(jest.genMockFn());
+            .mockReturnValueOnce(genMockMiddleware());
 
         app = new App({
             passport: {
@@ -65,13 +68,30 @@ describe('App', () => {
     it('redirects to /login if unauthorized', () => {
         const req = new IncomingMessage();
         req.url = '/';
+        req.session = {};
+        const res = new ServerResponse();
+        res.redirect = jest.genMockFn();
+        const next = jest.genMockFn();
+
+        app.handle(req, res, next);
+
+        expect(next).not.toBeCalled();
+        expect(res.redirect).toBeCalledWith('/login');
+        expect(req.session.loginRedirect).toEqual('/');
+    });
+
+    it('responds 401 for socket.io reqest if unauthorized', () => {
+        const req = new IncomingMessage();
+        req.url = '/socket.io';
         const res = new ServerResponse();
         const next = jest.genMockFn();
 
         app.handle(req, res, next);
 
         expect(next).not.toBeCalled();
+        expect(res.statusCode).toBe(401);
     });
+
 
     it('creates apps from object', () => {
         Passport
