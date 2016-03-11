@@ -35,6 +35,7 @@ export class App {
                     })
                     .catch((e) => {
                         if (e !== USER_NOT_FOUND) return e;
+
                         return users.create({
                             id: profile.username,
                             name: profile.displayName,
@@ -95,6 +96,7 @@ export class App {
             if (!req.user || req.public) return next();
 
             req.logout();
+
             return res.redirect('/');
         });
 
@@ -114,6 +116,7 @@ export class App {
         return this.app.handle(req, res, (err) => {
             if (err) {
                 this.logger.error(err);
+
                 return;
             }
             next();

@@ -29,6 +29,7 @@ export class Etcd {
             uri: `${this.origin}/v2/keys/${key}`,
         }).then((data) => {
             if (watch) this.watch(key, data.node);
+
             return data.node;
         });
     }

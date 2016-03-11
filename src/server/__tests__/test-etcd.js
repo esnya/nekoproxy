@@ -16,6 +16,7 @@ describe('Etcd', () => {
         request.mockReturnValueOnce(Promise.resolve({
             node: { value: 'test-value1' },
         }));
+
         return etcd.get('test-key1').then((value) => {
             expect(request)
                 .toBeCalledWith({
@@ -62,6 +63,7 @@ describe('Etcd', () => {
             })
             .then(() => {
                 request.mockClear();
+
                 return etcd.get('test-key2', true);
             })
             .then((node) => {
