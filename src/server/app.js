@@ -101,8 +101,12 @@ export class App {
         app.use((req, res, next) => {
             if (req.user || req.public) return next();
 
-            req.session.loginRedirect = req.url;
-            res.redirect('/login');
+            if (req.url.match(/socket.io/)) {
+                res.sendStatus(401);
+            } else {
+                req.session.loginRedirect = req.url;
+                res.redirect('/login');
+            }
         });
     }
 
