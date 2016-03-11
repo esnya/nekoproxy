@@ -15,7 +15,7 @@
         "passport": {
         },
         "session": {
-            "store": "database",
+            "store": "knex",
             "resave": true,
             "saveUninitialized": true
         }
