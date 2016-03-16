@@ -1,6 +1,6 @@
 {
   "name": "nekoproxy",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "NekoRPG front-end reverse proxy with SNS-SSO.",
   "main": "lib/server",
   "scripts": {
@@ -9,6 +9,7 @@
     "build": "gulp build",
     "serve": "gulp serve",
     "test": "gulp test",
+    "version": "update-changelog && git add CHANGELOG.md",
     "watch": "gulp watch"
   },
   "author": "ukatama",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "nekodev": "file:nekodev",
-    "socket.io": "^1.4.4"
+    "socket.io": "^1.4.4",
+    "update-changelog": "^1.0.1"
   }
 }
