@@ -25,10 +25,15 @@
         "hostname": "127.0.0.1",
         "port": 4001
     },
+    "metrics": {
+        "host": "127.0.0.1",
+        "port": 8080,
+        "path": "/metrics"
+    },
     "mock": false,
     "server": {
         "host": "localhost",
-        "port": 8080
+        "port": 8000
     },
     "rules": {
     }

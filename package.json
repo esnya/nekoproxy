@@ -30,6 +30,7 @@
     "mysql2": "^0.15.8",
     "passport": "^0.3.2",
     "passport-twitter": "^1.0.3",
+    "prom-client": "^3.3.0",
     "react": "^0.14.6",
     "react-dom": "^0.14.6",
     "request-promise": "^2.0.1",

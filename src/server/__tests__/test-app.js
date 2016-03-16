@@ -1,32 +1,23 @@
-jest.autoMockOff();
-
-jest.dontMock('express');
-require('express');
-
-jest.dontMock('../app');
-
-jest.mock('http');
-jest.mock('passport');
-jest.mock('../page');
-jest.mock('../session');
-
 describe('App', () => {
+    const genMockMiddleware = () =>
+        jest.genMockFn().mockImpl((req, res, next) => next());
+
+    jest.mock('http');
     const {
         IncomingMessage,
         ServerResponse,
     } = require('http');
 
-    const genMockMiddleware = () =>
-        jest.genMockFn().mockImpl((req, res, next) => next());
+    const {Passport} = require('passport');
 
+    const {logins} = require('../metrics');
     jest.setMock('../session', {
         session: jest.genMockFn()
             .mockReturnValue(genMockMiddleware()),
     });
 
-    const Passport = require('passport').Passport;
-
-    jest.dontMock('lodash');
+    jest.unmock('express');
+    jest.unmock('../app');
     const {
         createApps,
         App,
@@ -50,6 +41,7 @@ describe('App', () => {
             .mockReturnValueOnce(genMockMiddleware());
 
         app = new App({
+            name: 'App',
             passport: {
                 twitter: {
                     consumerKey: 'CONSUMER_KEY',
@@ -84,6 +76,39 @@ describe('App', () => {
 
         expect(next).not.toBeCalled();
         expect(res.statusCode).toBe(401);
+    });
+
+    pit('increments user login metric', () => {
+        const strategy = Passport.prototype.use.mock.calls[0][0];
+        const authenticate = strategy.constructor.mock.calls[0][1];
+
+        app.users.find.mockReturnValue(Promise.resolve({
+            id: 'user1',
+            name: 'User 1',
+        }));
+
+        return new Promise((resolve, reject) => {
+                authenticate(
+                    'token',
+                    'secret',
+                    {id: 'user1'},
+                    (e, user) => e ? reject(e) : resolve(user)
+                );
+            })
+            .then((user) => {
+                expect(user).toEqual({
+                    id: 'user1',
+                    name: 'User 1',
+                });
+                expect(logins.inc).toBeCalledWith({
+                    app: 'App',
+                    provider: 'twitter',
+                    user_id: 'user1',
+                });
+            })
+            .catch((e) => {
+                throw e;
+            });
     });
 
     it('creates apps from object', () => {

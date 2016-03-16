@@ -1,8 +1,9 @@
-import { Server as HttpServer } from 'http';
+import {Server as HttpServer} from 'http';
 import ProxyServer from 'http-proxy';
-import { getLogger } from 'log4js';
-import { createApps } from './app';
-import { Router } from './router';
+import {getLogger} from 'log4js';
+import {createApps} from './app';
+import {requests} from './metrics';
+import {Router} from './router';
 
 export class Server extends HttpServer {
     constructor(config = {}) {
@@ -67,15 +68,25 @@ export class Server extends HttpServer {
     }
 
     onRequest(req, res) {
-        this.logger.debug('Request', req.headers.host, req.url);
+        const host = req.headers.host;
+        this.logger.debug('Request', host, req.url);
 
         return this.resolveRoute(req, res).then((route) => {
                 const app = this.apps[route.app];
+                const target = route.target;
 
-                req.public = !!route.public;
+                req.public = Boolean(route.public);
+
+                requests.inc({
+                    app: route.app,
+                    host,
+                    url: req.url,
+                    target,
+                    public: req.public,
+                });
 
                 app.handle(req, res, () => this.proxy.web(req, res, {
-                    target: route.target,
+                    target,
                 }));
             });
     }

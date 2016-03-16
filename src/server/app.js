@@ -3,14 +3,15 @@
 
 import express from 'express';
 import Knex from 'knex';
-import { defaultsDeep, forEach, transform } from 'lodash';
-import { getLogger } from 'log4js';
-import { Passport } from 'passport';
+import {defaultsDeep, forEach, transform} from 'lodash';
+import {getLogger} from 'log4js';
+import {Passport} from 'passport';
 import path from 'path';
 
-import { render } from './page';
-import { session } from './session';
-import { USER_NOT_FOUND, UserModel } from './user';
+import {logins} from './metrics';
+import {render} from './page';
+import {session} from './session';
+import {USER_NOT_FOUND, UserModel} from './user';
 
 export class App {
     constructor(config) {
@@ -43,7 +44,15 @@ export class App {
                             oauth_id: profile.id,
                         });
                     })
-                    .then((user) => next(null, user))
+                    .then((user) => {
+                        logins.inc({
+                            app: config.name,
+                            provider: key,
+                            user_id: user.id,
+                        });
+
+                        return next(null, user);
+                    })
                     .catch(next);
             }));
         });

@@ -1,20 +1,19 @@
-jest.mock('http');
-jest.mock('http-proxy');
-jest.mock('../page');
-jest.dontMock('../server');
-
 describe('Server', () => {
+    jest.mock('http');
     const http = require('http');
-    const Logger = require('log4js/lib/logger').Logger;
-    const getLogger = require('log4js').getLogger;
     const ProxyServer = require('http-proxy');
+
+    const {Logger} = require('log4js/lib/logger');
+    const {getLogger} = require('log4js');
 
     const {
         createApps,
         App,
     } = require('../app');
+    const {requests} = require('../metrics');
 
-    const Server = require('../server').Server;
+    jest.unmock('../server');
+    const {Server} = require('../server');
 
     let server;
     const apps = {
@@ -23,7 +22,6 @@ describe('Server', () => {
     };
     it('listens as a http server', () => {
         getLogger.mockReturnValue(new Logger());
-
         createApps.mockReturnValue(apps);
 
         server = new Server({
@@ -57,6 +55,7 @@ describe('Server', () => {
 
         server.router.route.mockReturnValueOnce(Promise.resolve({
             app: 'app1',
+            target: 'http://127.0.0.1:8001',
         }));
 
         http
@@ -75,6 +74,17 @@ describe('Server', () => {
                 expect(apps.app1.handle).toBeCalled();
             })
     );
+
+    it('counts requests', () => {
+        expect(requests.inc).toBeCalled();
+        expect(requests.inc.mock.calls[0]).toEqual([{
+            app: 'app1',
+            host: 'app.example.com',
+            url: '/',
+            target: 'http://127.0.0.1:8001',
+            public: false,
+        }]);
+    });
 
     let proxy;
     it('calls proxy after authorized', () => {
