@@ -17,6 +17,13 @@ export const requests = new Counter('proxy_requests_total', 'Total requests', [
     'public',
 ]);
 
+export const inbounds =
+    new Counter('http_requests_total', 'Total HTTP requests', [
+        'host',
+        'method',
+        'url',
+    ]);
+
 export const endpoint = (config = {}) => {
     const {
         path,

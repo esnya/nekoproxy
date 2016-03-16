@@ -10,7 +10,7 @@ describe('Server', () => {
         createApps,
         App,
     } = require('../app');
-    const {requests} = require('../metrics');
+    const {inbounds, requests} = require('../metrics');
 
     jest.unmock('../server');
     const {Server} = require('../server');
@@ -47,6 +47,7 @@ describe('Server', () => {
 
     pit('routes request by router', () => {
         const req = new http.IncomingMessage();
+        req.method = 'GET';
         req.url = '/';
         req.headers = {
             host: 'app.example.com',
@@ -83,6 +84,13 @@ describe('Server', () => {
             url: '/',
             target: 'http://127.0.0.1:8001',
             public: false,
+        }]);
+
+        expect(inbounds.inc).toBeCalled();
+        expect(inbounds.inc.mock.calls[0]).toEqual([{
+            host: 'app.example.com',
+            method: 'GET',
+            url: '/',
         }]);
     });
 

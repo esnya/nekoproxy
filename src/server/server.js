@@ -2,7 +2,7 @@ import {Server as HttpServer} from 'http';
 import ProxyServer from 'http-proxy';
 import {getLogger} from 'log4js';
 import {createApps} from './app';
-import {requests} from './metrics';
+import {inbounds, requests} from './metrics';
 import {Router} from './router';
 
 export class Server extends HttpServer {
@@ -69,7 +69,14 @@ export class Server extends HttpServer {
 
     onRequest(req, res) {
         const host = req.headers.host;
+        const url = req.url;
         this.logger.debug('Request', host, req.url);
+
+        inbounds.inc({
+            host,
+            url,
+            method: req.method,
+        });
 
         return this.resolveRoute(req, res).then((route) => {
                 const app = this.apps[route.app];
@@ -80,7 +87,7 @@ export class Server extends HttpServer {
                 requests.inc({
                     app: route.app,
                     host,
-                    url: req.url,
+                    url,
                     target,
                     public: req.public,
                 });
