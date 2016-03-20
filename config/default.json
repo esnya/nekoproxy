@@ -35,6 +35,10 @@
         "host": "localhost",
         "port": 8000
     },
+    "sslServer": {
+        "host": "localhost",
+        "port": 8443
+    },
     "rules": {
     }
 }
