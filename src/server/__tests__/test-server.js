@@ -1,6 +1,13 @@
 describe('Server', () => {
+    jest.mock('fs');
+    const fs = require('fs');
+
     jest.mock('http');
     const http = require('http');
+
+    jest.mock('https');
+    const https = require('https');
+
     const ProxyServer = require('http-proxy');
 
     const {Logger} = require('log4js/lib/logger');
@@ -31,18 +38,22 @@ describe('Server', () => {
             },
         });
 
-        expect(server.listen).toBeCalled();
-        expect(server.listen.mock.calls[0][0]).toEqual({
+        expect(server.server instanceof http.Server).toBe(true);
+
+        expect(server.server.listen).toBeCalled();
+
+        const call = server.server.listen.mock.calls[0];
+        expect(call[0]).toEqual({
             host: 'localhost',
             port: 8080,
         });
 
-        const onListen = server.listen.mock.calls[0][1];
-        server.address.mockReturnValueOnce({
+        const onListen = call[1];
+        server.server.address.mockReturnValueOnce({
             address: '127.0.0.1',
             port: 8080,
         });
-        if (onListen) onListen();
+        onListen();
     });
 
     pit('routes request by router', () => {
@@ -147,6 +158,7 @@ describe('Server', () => {
         }));
 
         server
+            .server
             .on
             .mock
             .calls
@@ -298,5 +310,39 @@ describe('Server', () => {
             .then(() => {
                 expect(req.public).toBe(true);
             });
+    });
+
+
+    it('listens as a https server', () => {
+        const filedata = new Buffer([]);
+        fs.readFileSync.mockReturnValue(filedata);
+
+        const httpsServer = new Server({
+            server: {
+                host: 'localhost',
+                port: 8080,
+            },
+            sslServer: {
+                host: 'localhost',
+                port: 8443,
+            },
+            ssl: {
+                key: 'key.pem',
+                cert: 'cert.pem',
+            },
+        });
+
+        expect(httpsServer.server instanceof http.Server).toBe(true);
+        expect(httpsServer.httpsServer instanceof https.Server).toBe(true);
+        expect(https.Server).toBeCalled();
+        expect(https.Server.mock.calls[0][0]).toEqual({
+            key: filedata,
+            cert: filedata,
+        });
+        expect(httpsServer.httpsServer.listen).toBeCalled();
+        expect(httpsServer.httpsServer.listen.mock.calls[0][0]).toEqual({
+            host: 'localhost',
+            port: 8443,
+        });
     });
 });

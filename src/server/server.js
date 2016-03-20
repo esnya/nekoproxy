@@ -1,13 +1,24 @@
+import {mapValues} from 'lodash';
+import {readFileSync} from 'fs';
 import {Server as HttpServer} from 'http';
+import {Server as HttpsServer} from 'https';
 import ProxyServer from 'http-proxy';
 import {getLogger} from 'log4js';
 import {createApps} from './app';
 import {inbounds, requests} from './metrics';
 import {Router} from './router';
 
-export class Server extends HttpServer {
+export class Server {
     constructor(config = {}) {
-        super((req, res) => this.onRequest(req, res));
+        this.server =
+            new HttpServer((req, res) => this.onRequest(req, res));
+
+        if (config.ssl) {
+            this.httpsServer = new HttpsServer(
+                mapValues(config.ssl, (file) => readFileSync(file)),
+                (req, res) => this.onRequest(req, res)
+            );
+        }
 
         this.logger = getLogger('[server]');
         this.apps = createApps(config);
@@ -19,7 +30,18 @@ export class Server extends HttpServer {
         this.proxy.on('proxyRes', (...args) => this.onProxyRes(...args));
         this.proxy.on('error', (e) => this.logger.error(e));
 
-        this.listen(config.server, () => this.onListen());
+        this.server.listen(config.server, () => this.onListen(this.server));
+        if (this.httpsServer) {
+            this.httpsServer.listen(
+                config.sslServer,
+                () => this.onListen(this.httpsServer)
+            );
+        }
+    }
+
+    on(...args) {
+        this.server.on(...args);
+        if (this.httpsServer) this.httpsServer.on(...args);
     }
 
     resolveRoute(req, res = null, cors = true) {
@@ -52,11 +74,11 @@ export class Server extends HttpServer {
         });
     }
 
-    onListen() {
+    onListen(server) {
         const {
             address,
             port,
-        } = this.address();
+        } = server.address();
 
         this.logger.info(`Listening on ${address} ${port}`);
     }
