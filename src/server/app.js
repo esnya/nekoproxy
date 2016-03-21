@@ -68,6 +68,14 @@ export class App {
 
         const app = this.app = express();
 
+        if (config.sslRedirect) {
+            app.use((req, res, next) => {
+                if (req.protocol === 'https') return next();
+
+                return res.redirect(`https://${req.headers.host}${req.url}`);
+            });
+        }
+
         app.use(session(knex, config));
         app.use(passport.initialize());
         app.use(passport.session());

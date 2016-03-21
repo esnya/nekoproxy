@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Prometheus client.
 - HTTPS support.
+- Redirect to HTTPS.
 
 ## [1.0.0] - 2016-03-16
 ### Changed

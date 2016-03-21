@@ -152,4 +152,52 @@ describe('App', () => {
             signUp: true,
         });
     });
+
+    it('redirects to https', () => {
+        app = new App({
+            name: 'Proxy to HTTPS',
+            passport: {
+                twitter: {
+                    consumerKey: 'CONSUMER_KEY',
+                    consumerSecret: 'CONSUMER_SEVRET',
+                },
+            },
+            sslRedirect: true,
+        });
+
+        const req = new IncomingMessage();
+        req.protocol = 'http';
+        req.headers = {
+            host: 'localhost',
+        };
+        req.url = '/test/path';
+
+        const res = new ServerResponse();
+        res.redirect = jest.fn();
+
+        const next = jest.genMockFn();
+
+        app.handle(req, res, next);
+
+        expect(res.redirect).toBeCalledWith('https://localhost/test/path');
+        expect(next).not.toBeCalled();
+    });
+
+    it('proxies https', () => {
+        const req = new IncomingMessage();
+        req.protocol = 'https';
+        req.headers = {
+            host: 'localhost',
+        };
+        req.url = '/test/path';
+
+        const res = new ServerResponse();
+        res.redirect = jest.fn();
+
+        const next = jest.genMockFn();
+
+        app.handle(req, res, next);
+
+        expect(res.redirect).not.toBeCalled();
+    });
 });
