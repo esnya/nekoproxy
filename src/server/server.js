@@ -96,7 +96,6 @@ export class Server {
 
         inbounds.inc({
             host,
-            url,
             method: req.method,
         });
 
@@ -109,7 +108,6 @@ export class Server {
                 requests.inc({
                     app: route.app,
                     host,
-                    url,
                     target,
                     public: req.public,
                 });

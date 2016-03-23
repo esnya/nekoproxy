@@ -12,7 +12,6 @@ export const logins =
 export const requests = new Counter('proxy_requests_total', 'Total requests', [
     'app',
     'host',
-    'url',
     'target',
     'public',
 ]);
@@ -21,7 +20,6 @@ export const inbounds =
     new Counter('http_requests_total', 'Total HTTP requests', [
         'host',
         'method',
-        'url',
     ]);
 
 export const endpoint = (config = {}) => {

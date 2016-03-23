@@ -92,7 +92,6 @@ describe('Server', () => {
         expect(requests.inc.mock.calls[0]).toEqual([{
             app: 'app1',
             host: 'app.example.com',
-            url: '/',
             target: 'http://127.0.0.1:8001',
             public: false,
         }]);
@@ -101,7 +100,6 @@ describe('Server', () => {
         expect(inbounds.inc.mock.calls[0]).toEqual([{
             host: 'app.example.com',
             method: 'GET',
-            url: '/',
         }]);
     });
 
