@@ -28,11 +28,11 @@ describe('metrics/prometheus', () => {
 
         expect(Counter).toBeCalled();
         expect(Counter.mock.instances)
-            .toContain(counter.counters[Metrics.USER_LOGIN]);
+            .toContain(counter.counters[Metrics.UserLogin]);
         expect(Counter.mock.instances)
-            .toContain(counter.counters[Metrics.PROXY_REQUEST]);
+            .toContain(counter.counters[Metrics.ProxyRequest]);
         expect(Counter.mock.instances)
-            .toContain(counter.counters[Metrics.INBOUND_REQUEST]);
+            .toContain(counter.counters[Metrics.InboundRequest]);
     });
 
     it('listens as HTTP server', () => {
