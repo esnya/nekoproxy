@@ -1,6 +1,6 @@
 import config from 'config';
 import {Server} from './server';
-import {endpoint} from './metrics';
+import {MetricCounter} from './metrics';
 
-export const server = new Server(config);
-endpoint(config.get('metrics'));
+export const metrics = new MetricCounter(config);
+export const server = new Server(config, metrics);

@@ -17,12 +17,13 @@ describe('Server', () => {
         createApps,
         App,
     } = require('../app');
-    const {inbounds, requests} = require('../metrics');
+    const Metrics = require('../metrics/metrics');
+    const {MetricCounter} = require('../metrics');
 
     jest.unmock('../server');
     const {Server} = require('../server');
 
-    let server;
+    let metrics, server;
     const apps = {
         app1: new App(),
         app2: new App(),
@@ -31,12 +32,18 @@ describe('Server', () => {
         getLogger.mockReturnValue(new Logger());
         createApps.mockReturnValue(apps);
 
+        metrics = new MetricCounter({
+            prometheus: {
+                path: '/metrics',
+            },
+        });
+
         server = new Server({
             server: {
                 host: 'localhost',
                 port: 8080,
             },
-        });
+        }, metrics);
 
         expect(server.server instanceof http.Server).toBe(true);
 
@@ -88,19 +95,17 @@ describe('Server', () => {
     );
 
     it('counts requests', () => {
-        expect(requests.inc).toBeCalled();
-        expect(requests.inc.mock.calls[0]).toEqual([{
+        expect(metrics.increment).toBeCalledWith(Metrics.ProxyRequest, {
             app: 'app1',
             host: 'app.example.com',
             target: 'http://127.0.0.1:8001',
             public: false,
-        }]);
+        });
 
-        expect(inbounds.inc).toBeCalled();
-        expect(inbounds.inc.mock.calls[0]).toEqual([{
+        expect(metrics.increment).toBeCalledWith(Metrics.InboundRequest, {
             host: 'app.example.com',
             method: 'GET',
-        }]);
+        });
     });
 
     let proxy;

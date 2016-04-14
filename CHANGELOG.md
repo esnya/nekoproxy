@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 # [Unreleased]
 ### Added
 - Prometheus client.
+- Fluentd support.
 - HTTPS support.
 - Redirect to HTTPS.
 

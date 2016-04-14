@@ -10,7 +10,6 @@ describe('App', () => {
 
     const {Passport} = require('passport');
 
-    const {logins} = require('../metrics');
     jest.setMock('../session', {
         session: jest.genMockFn()
             .mockReturnValue(genMockMiddleware()),
@@ -23,7 +22,10 @@ describe('App', () => {
         App,
     } = require('../app');
 
-    let app, auth;
+    const Metrics = require('../metrics/metrics');
+    const {MetricCounter} = require('../metrics');
+
+    let app, auth, metrics;
     it('can be instanced', () => {
         auth = genMockMiddleware;
         Passport
@@ -40,6 +42,8 @@ describe('App', () => {
             .session
             .mockReturnValueOnce(genMockMiddleware());
 
+        metrics = new MetricCounter();
+
         app = new App({
             name: 'App',
             passport: {
@@ -48,7 +52,7 @@ describe('App', () => {
                     consumerSecret: 'CONSUMER_SEVRET',
                 },
             },
-        });
+        }, metrics);
     });
 
     it('redirects to /login if unauthorized', () => {
@@ -100,7 +104,7 @@ describe('App', () => {
                     id: 'user1',
                     name: 'User 1',
                 });
-                expect(logins.inc).toBeCalledWith({
+                expect(metrics.increment).toBeCalledWith(Metrics.UserLogin, {
                     app: 'App',
                     provider: 'twitter',
                     user_id: 'user1',

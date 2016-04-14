@@ -5,11 +5,13 @@ import {Server as HttpsServer} from 'https';
 import ProxyServer from 'http-proxy';
 import {getLogger} from 'log4js';
 import {createApps} from './app';
-import {inbounds, requests} from './metrics';
+import * as Metrics from './metrics/metrics';
 import {Router} from './router';
 
 export class Server {
-    constructor(config = {}) {
+    constructor(config = {}, metrics) {
+        this.metrics = metrics;
+
         this.server =
             new HttpServer((req, res) => this.onRequest(req, res));
 
@@ -21,7 +23,7 @@ export class Server {
         }
 
         this.logger = getLogger('[server]');
-        this.apps = createApps(config);
+        this.apps = createApps(config, metrics);
         this.proxy = new ProxyServer();
         this.router = new Router(config);
 
@@ -94,7 +96,7 @@ export class Server {
         const url = req.url;
         this.logger.debug('Request', host, req.url);
 
-        inbounds.inc({
+        this.metrics.increment(Metrics.InboundRequest, {
             host,
             method: req.method,
         });
@@ -105,7 +107,7 @@ export class Server {
 
                 req.public = Boolean(route.public);
 
-                requests.inc({
+                this.metrics.increment(Metrics.ProxyRequest, {
                     app: route.app,
                     host,
                     target,

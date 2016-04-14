@@ -25,7 +25,7 @@
         "hostname": "127.0.0.1",
         "port": 4001
     },
-    "metrics": {
+    "prometheus": {
         "host": "127.0.0.1",
         "port": 8080,
         "path": "/metrics"

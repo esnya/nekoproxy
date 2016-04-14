@@ -8,13 +8,14 @@ import {getLogger} from 'log4js';
 import {Passport} from 'passport';
 import path from 'path';
 
-import {logins} from './metrics';
+import * as Metrics from './metrics/metrics';
 import {render} from './page';
 import {session} from './session';
 import {USER_NOT_FOUND, UserModel} from './user';
 
 export class App {
-    constructor(config) {
+    constructor(config, metrics) {
+        this.metrics = metrics;
         this.config = config;
         this.logger = getLogger(`[app-${config.name}]`);
 
@@ -45,7 +46,7 @@ export class App {
                         });
                     })
                     .then((user) => {
-                        logins.inc({
+                        metrics.increment(Metrics.UserLogin, {
                             app: config.name,
                             provider: key,
                             user_id: user.id,
@@ -144,10 +145,11 @@ export class App {
 /**
  * Create all App instances from config.
  * @param{object} config - Configuration object.
+ * @param{MetricCounter} metrics - Metric counter..
  * @return{object} Instance of Apps.
  */
-export function createApps(config) {
+export function createApps(config, metrics) {
     return transform(config.apps, (result, value, key) => {
-        result[key] = new App(defaultsDeep(value, config.default));
+        result[key] = new App(defaultsDeep(value, config.default), metrics);
     });
 }
