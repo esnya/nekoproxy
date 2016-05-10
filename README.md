@@ -7,6 +7,28 @@
 
 NekoRPG front-end reverse proxy with SNS-SSO.
 
+```
+                            +---------+
+                            | Twitter |
+                            +-------- +
+                                 ^
+                                 |
+                                auth
+                                 |
+                                 |
++---------+                +-----------+                           +------+ 
+| Browser | -- request --> | Nekoproxy |  -- get routes/addr -->   | etcd |
++---------+                +-----------+                           +------+
+                                 |                                    ^
+                                 |                                    |
+                               proxy                                addr
+                                 |                                    |
+                                 v                                    |
+                           +-------------+                   +------------------+
+                           | Application | <-- watch addr -- | nekoetcd-connect |
+                           +-------------+                   +------------------+
+```
+
 ## Requirements
 - Docker
 - etcd v2
@@ -21,3 +43,6 @@ ToDo (See also: `config/default.yml`, `config/production.yml`)
 ## Usage
 
 ToDo
+
+## Draft documentation (Japanese)
+https://gist.github.com/ukatama/027555494619fb2a202ff7bc52611c3f
