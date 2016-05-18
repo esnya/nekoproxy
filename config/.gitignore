@@ -1,4 +1,5 @@
 *
 !.gitignore
-!default.json
-!production.json
+!default.yml
+!development.yml
+!production.yml
