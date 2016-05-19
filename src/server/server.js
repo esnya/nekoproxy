@@ -47,33 +47,34 @@ export class Server {
     }
 
     resolveRoute(req, res = null, cors = true) {
-        return this.router.route(req.headers.host, req.url).then((route) => {
-            if (!route || !(route.app in this.apps)) {
-                this.logger.debug('404', req.headers.host, req.url);
-                if (res) {
-                    res.writeHead(404);
-                    res.end('Not Found');
+        return this.router.route(req.headers.host, req.url, req.method)
+            .then((route) => {
+                if (!route || !(route.app in this.apps)) {
+                    this.logger.debug('404', req.headers.host, req.url);
+                    if (res) {
+                        res.writeHead(404);
+                        res.end('Not Found');
+                    }
+
+                    return Promise.reject('Not Found');
                 }
 
-                return Promise.reject('Not Found');
-            }
+                if (cors && req.headers.origin) {
+                    const m = (/^https?:\/\/([^:\/]+)(:([0-9]+))?$/)
+                        .exec(req.headers.origin);
+                    if (m) {
+                        return this.resolveRoute(req, null, false)
+                            .then(() => {
+                                req.cors = true;
 
-            if (cors && req.headers.origin) {
-                const m = (/^https?:\/\/([^:\/]+)(:([0-9]+))?$/)
-                    .exec(req.headers.origin);
-                if (m) {
-                    return this.resolveRoute(req, null, false)
-                        .then(() => {
-                            req.cors = true;
-
-                            return route;
-                        })
-                        .catch(() => route);
+                                return route;
+                            })
+                            .catch(() => route);
+                    }
                 }
-            }
 
-            return route;
-        });
+                return route;
+            });
     }
 
     onListen(server) {

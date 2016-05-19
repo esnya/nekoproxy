@@ -82,7 +82,8 @@ describe('Server', () => {
             .mock
             .calls[0][0](req, res);
 
-        expect(server.router.route).toBeCalledWith('app.example.com', '/');
+        expect(server.router.route)
+            .toBeCalledWith('app.example.com', '/', 'GET');
 
         return Promise.resolve();
     });

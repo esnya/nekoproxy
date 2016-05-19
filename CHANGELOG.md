@@ -4,15 +4,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 # [Unreleased]
 ### Added
-- Prometheus client.
-- Fluentd support.
-- HTTPS support.
-- Redirect to HTTPS.
+- Prometheus client
+- Fluentd support
+- HTTPS support
+- Redirect to HTTPS
+- Route by method
 
 ## [1.0.0] - 2016-03-16
 ### Changed
-- Start following [Keep a CHANGELOG](http://keepachangelog.com/).
+- Start following [Keep a CHANGELOG](http://keepachangelog.com/)
 
 ### Fixed
-- Abnormal termination due to an error of proxy.
-- Set viewport for mobile browsers.
+- Abnormal termination due to an error of proxy
+- Set viewport for mobile browsers

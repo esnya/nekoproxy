@@ -7,6 +7,12 @@ describe('Router', () => {
 
     const routes = [
         {
+            app: 'app3',
+            host: 'app2.example.com',
+            methods: ['POST', 'PUT'],
+            target: 'http://target-app2.example.com',
+        },
+        {
             app: 'app1',
             host: 'app1.example.com',
             target: 'http://target-app1.example.com',
@@ -44,15 +50,24 @@ describe('Router', () => {
     });
 
     pit('routes by host', () =>
-        router.route('app1.example.com', '/the/path').then((route) => {
-            expect(route).toEqual(routes[0]);
-        })
+        router.route('app1.example.com', '/the/path', 'GET')
+            .then((route) => {
+                expect(route).toEqual(routes[1]);
+            })
     );
 
     pit('routes by path', () =>
-        router.route('app2.example.com', '/public/path').then((route) => {
-            expect(route).toEqual(routes[1]);
-        })
+        router.route('app2.example.com', '/public/path', 'GET')
+            .then((route) => {
+                expect(route).toEqual(routes[2]);
+            })
+    );
+
+    pit('routes by methods', () =>
+        router.route('app2.example.com', '/public/path', 'POST')
+            .then((route) => {
+                expect(route).toEqual(routes[0]);
+            })
     );
 
     pit('returns null when any route does not match', () =>
@@ -66,9 +81,9 @@ describe('Router', () => {
             Promise.resolve({ value: 'http://etcd-target-app2.example.com' })
         );
 
-        return router.route('app2.example.com', '/').then((route) => {
+        return router.route('app2.example.com', '/', 'GET').then((route) => {
                 expect(route).toEqual({
-                    ...routes[2],
+                    ...routes[3],
                     target: 'http://etcd-target-app2.example.com',
                 });
                 expect(etcd.get).toBeCalledWith('backends/app2', true);
@@ -97,10 +112,10 @@ describe('Router', () => {
             Promise.resolve({ value: JSON.stringify(routes) })
         );
 
-        return erouter.route('app1.example.com', '/public/path')
+        return erouter.route('app1.example.com', '/public/path', 'GET')
             .then((route) => {
                 expect(etcd2.get).toBeCalledWith('routes', true);
-                expect(route).toEqual(routes[0]);
+                expect(route).toEqual(routes[1]);
             });
     });
 });

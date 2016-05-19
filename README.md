@@ -154,13 +154,14 @@ Specify proxy routes by array in descending order of priority.
 
 Each of route is specified in an object consisting of the following keys:
 
-| key    | type            | description                                                                                   |
-|--------|-----------------|-----------------------------------------------------------------------------------------------|
-| host   | string          | Host name matcher                                                                             |
-| url    | string (regexp) | URL matcher. optional. e.g. `"^/foo/bar[0-9]+$"`                                              |
-| app    | string          | Application ID                                                                                |
-| etcd   | string          | Key of the target address in etcd. Specified by `--env APP=<vlalue>` in [Connect](#Connect).  |
-| public | boolean         | Set `true` to disable authentication. (Default: `false`)                                      |
+| key     | type            | description                                                                                   |
+|---------|-----------------|-----------------------------------------------------------------------------------------------|
+| host    | string          | Host name matcher                                                                             |
+| url     | string (regexp) | URL matcher. optional. e.g. `"^/foo/bar[0-9]+$"`                                              |
+| methods | array of string | Arrowed methods                                                                               |
+| app     | string          | Application ID                                                                                |
+| etcd    | string          | Key of the target address in etcd. Specified by `--env APP=<vlalue>` in [Connect](#Connect).  |
+| public  | boolean         | Set `true` to disable authentication. (Default: `false`)                                      |
 
 Route configurations can be write under `route` key of [configuration file](#Configuration).
 
@@ -181,6 +182,7 @@ $ docker exec -i etcd /etcdctl set /routes "$(cat /path/to/routes.json)"
   {
     "host": "bar.b.example.com",
     "url": "^/public.*$",
+    "methods": ["GET", "HEAD"],
     "app": "b",
     "etcd": "bar",
     "public": true

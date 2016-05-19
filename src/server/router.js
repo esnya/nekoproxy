@@ -15,13 +15,17 @@ export class Router {
             : Promise.resolve(this.routes);
     }
 
-    matchRoute(routes, host, url) {
+    matchRoute(routes, {host, url, method}) {
         for (let i = 0; i < routes.length; i++) {
             const route = routes[i];
 
             if (
                 (!route.host || host === route.host) &&
-                    (!route.url || (new RegExp(route.url)).exec(url))
+                    (!route.url || (new RegExp(route.url)).exec(url)) &&
+                    (
+                        !route.methods ||
+                            route.methods.indexOf(method.toUpperCase()) >= 0
+                    )
             ) {
                 return route;
             }
@@ -30,11 +34,11 @@ export class Router {
         return null;
     }
 
-    route(host, url) {
+    route(host, url, method) {
         return this
             .getRoutes()
             .then((routes) => {
-                const route = this.matchRoute(routes, host, url);
+                const route = this.matchRoute(routes, {host, url, method});
 
                 if (!route || !route.etcd || !this.etcd) {
                     return route;
