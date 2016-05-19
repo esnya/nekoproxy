@@ -2,13 +2,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-# [Unreleased]
+## [1.2.0] - 2016-5-19
+### Added
+- Route by method
+
+## [1.1.0] - 2016-03-21
 ### Added
 - Prometheus client
 - Fluentd support
 - HTTPS support
 - Redirect to HTTPS
-- Route by method
 
 ## [1.0.0] - 2016-03-16
 ### Changed
