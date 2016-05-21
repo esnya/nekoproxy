@@ -1,6 +1,6 @@
 {
   "name": "nekoproxy",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "NekoRPG front-end reverse proxy with SNS-SSO.",
   "main": "lib/server",
   "scripts": {
