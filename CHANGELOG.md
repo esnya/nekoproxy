@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+- Error on Login page renderer
+
 ## [1.2.0] - 2016-5-19
 ### Added
 - Route by method
