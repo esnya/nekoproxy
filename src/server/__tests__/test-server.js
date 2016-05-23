@@ -357,4 +357,33 @@ describe('Server', () => {
             port: 8443,
         });
     });
+
+    pit('responds 500 if errored', () => {
+        const req = new http.IncomingMessage();
+        req.headers = {};
+        const res = new http.ServerResponse();
+        const e = new Error('Error for test');
+
+        server.router.route.mockReturnValueOnce(Promise.reject(e));
+
+        return server.onRequest(req, res)
+            .then(() => {
+                expect(res.statusCode).toBe(500);
+            })
+            .then(() => {
+                const req2 = new http.IncomingMessage();
+
+                // Cause error
+                req2.headers = null;
+
+                const res2 = new http.ServerResponse();
+
+                server.router.route.mockReturnValueOnce(Promise.resolve({}));
+
+                return server.onRequest(req2, res2);
+            })
+            .then(() => {
+                expect(res.statusCode).toBe(500);
+            });
+    });
 });

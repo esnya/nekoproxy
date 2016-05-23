@@ -98,6 +98,7 @@ export class Server {
     }
 
     onRequest(req, res) {
+        try {
         const host = req.headers.host;
         const url = req.url;
         this.logger.debug('Request', host, req.url);
@@ -107,7 +108,8 @@ export class Server {
             method: req.method,
         });
 
-        return this.resolveRoute(req, res).then((route) => {
+        return this.resolveRoute(req, res)
+            .then((route) => {
                 const app = this.apps[route.app];
                 const target = route.target;
 
@@ -123,7 +125,19 @@ export class Server {
                 app.handle(req, res, () => this.proxy.web(req, res, {
                     target,
                 }));
+            })
+            .catch((e) => {
+                this.logger.error(e);
+                res.statusCode = 500;
+                res.end();
             });
+        } catch (e) {
+            this.logger.error(e);
+            res.statusCode = 500;
+            res.end();
+
+            return Promise.resolve();
+        }
     }
 
     onProxyReq(proxyReq, req) {
