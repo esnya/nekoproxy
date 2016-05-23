@@ -28,6 +28,12 @@ describe('Router', () => {
             host: 'app2.example.com',
             etcd: 'app2',
         },
+        {
+            app: 'app4',
+            host: 'app4.example.com',
+            etcd: 'app4',
+            backends: 3,
+        },
     ];
 
     let etcd, router;
@@ -116,6 +122,22 @@ describe('Router', () => {
             .then((route) => {
                 expect(etcd2.get).toBeCalledWith('routes', true);
                 expect(route).toEqual(routes[1]);
+            });
+    });
+
+    pit('routes as loadbarancer', () => {
+        Math.random = jest.fn().mockReturnValue((3.2 - 1) / 3);
+
+        etcd.get.mockReturnValueOnce(
+            Promise.resolve({ value: 'http://etcd-target-app4.example.com' })
+        );
+
+        return router.route('app4.example.com', '/', 'GET').then((route) => {
+                expect(route).toEqual({
+                    ...routes[4],
+                    target: 'http://etcd-target-app4.example.com',
+                });
+                expect(etcd.get).toBeCalledWith('backends/app4-3', true);
             });
     });
 });

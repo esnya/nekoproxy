@@ -154,14 +154,15 @@ Specify proxy routes by array in descending order of priority.
 
 Each of route is specified in an object consisting of the following keys:
 
-| key     | type            | description                                                                                   |
-|---------|-----------------|-----------------------------------------------------------------------------------------------|
-| host    | string          | Host name matcher                                                                             |
-| url     | string (regexp) | URL matcher. optional. e.g. `"^/foo/bar[0-9]+$"`                                              |
-| methods | array of string | Arrowed methods                                                                               |
-| app     | string          | Application ID                                                                                |
-| etcd    | string          | Key of the target address in etcd. Specified by `--env APP=<vlalue>` in [Connect](#Connect).  |
-| public  | boolean         | Set `true` to disable authentication. (Default: `false`)                                      |
+| key      | type            | description                                                                                   |
+|----------|-----------------|-----------------------------------------------------------------------------------------------|
+| host     | string          | Host name matcher                                                                             |
+| url      | string (regexp) | URL matcher. optional. e.g. `"^/foo/bar[0-9]+$"`                                              |
+| methods  | array of string | Arrowed methods                                                                               |
+| app      | string          | Application ID                                                                                |
+| etcd     | string          | Key of the target address in etcd. Specified by `--env APP=<vlalue>` in [Connect](#Connect).  |
+| public   | boolean         | Set `true` to disable authentication. (Default: `false`)                                      |
+| backends | number          | Set number of backend instances to enable load barancing. Set null or 0 to disable LB.         |
 
 Route configurations can be write under `route` key of [configuration file](#Configuration).
 
@@ -170,6 +171,10 @@ You have to register JSON value of route configurations into etcd to Live-Config
 ```bash
 $ docker exec -i etcd /etcdctl set /routes "$(cat /path/to/routes.json)"
 ```
+
+#### Load barancing
+Backend applications must be named `app-N` and registerd into etcd.
+N is an integral number from 1 on up.
 
 #### Example of `routes.json`
 ```json
@@ -190,7 +195,8 @@ $ docker exec -i etcd /etcdctl set /routes "$(cat /path/to/routes.json)"
   {
     "host": "bar.b.example.com",
     "app": "b",
-    "etcd": "bar"
+    "etcd": "bar",
+    "backends": 3
   }
 ]
 ```

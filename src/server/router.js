@@ -44,7 +44,11 @@ export class Router {
                     return route;
                 }
 
-                return this.etcd.get(`backends/${route.etcd}`, true)
+                const n = route.backends &&
+                    Math.floor(Math.random() * route.backends) + 1;
+                const backend = n ? `${route.etcd}-${n}` : route.etcd;
+
+                return this.etcd.get(`backends/${backend}`, true)
                     .then((node) => ({
                         ...route,
                         target: node.value,
