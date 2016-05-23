@@ -1,6 +1,9 @@
 jest.dontMock('../router');
 
 describe('Router', () => {
+    jest.mock('crypto');
+    const {createHash} = require('crypto');
+
     const Etcd = require('../etcd').Etcd;
 
     const Router = require('../router').Router;
@@ -56,30 +59,45 @@ describe('Router', () => {
     });
 
     pit('routes by host', () =>
-        router.route('app1.example.com', '/the/path', 'GET')
+        router.route({
+                host: 'app1.example.com',
+                url: '/the/path',
+                method: 'GET',
+            })
             .then((route) => {
                 expect(route).toEqual(routes[1]);
             })
     );
 
     pit('routes by path', () =>
-        router.route('app2.example.com', '/public/path', 'GET')
+        router.route({
+                host: 'app2.example.com',
+                url: '/public/path',
+                method: 'GET',
+            })
             .then((route) => {
                 expect(route).toEqual(routes[2]);
             })
     );
 
     pit('routes by methods', () =>
-        router.route('app2.example.com', '/public/path', 'POST')
+        router.route({
+                host: 'app2.example.com',
+                url: '/public/path',
+                method: 'POST',
+            })
             .then((route) => {
                 expect(route).toEqual(routes[0]);
             })
     );
 
     pit('returns null when any route does not match', () =>
-        router.route('no-match.example.com', '/').then((route) => {
-            expect(route).toBeNull();
-        })
+        router.route({
+                host: 'no-match.example.com',
+                url: '/',
+            }).then((route) => {
+                expect(route).toBeNull();
+            })
     );
 
     pit('gets backends from etcd', () => {
@@ -87,7 +105,12 @@ describe('Router', () => {
             Promise.resolve({ value: 'http://etcd-target-app2.example.com' })
         );
 
-        return router.route('app2.example.com', '/', 'GET').then((route) => {
+        return router.route({
+                host: 'app2.example.com',
+                url: '/',
+                method: 'GET',
+            })
+            .then((route) => {
                 expect(route).toEqual({
                     ...routes[3],
                     target: 'http://etcd-target-app2.example.com',
@@ -118,7 +141,11 @@ describe('Router', () => {
             Promise.resolve({ value: JSON.stringify(routes) })
         );
 
-        return erouter.route('app1.example.com', '/public/path', 'GET')
+        return erouter.route({
+                host: 'app1.example.com',
+                url: '/public/path',
+                method: 'GET',
+            })
             .then((route) => {
                 expect(etcd2.get).toBeCalledWith('routes', true);
                 expect(route).toEqual(routes[1]);
@@ -126,17 +153,32 @@ describe('Router', () => {
     });
 
     pit('routes as loadbarancer', () => {
-        Math.random = jest.fn().mockReturnValue((3.2 - 1) / 3);
+        const hash = {
+            update: jest.fn(),
+            digest: jest.fn().mockReturnValue(new Buffer([3 * 12 + 3 - 1])),
+        };
+        hash.update.mockReturnValue(hash);
+        createHash.mockReturnValue(hash);
 
         etcd.get.mockReturnValueOnce(
             Promise.resolve({ value: 'http://etcd-target-app4.example.com' })
         );
 
-        return router.route('app4.example.com', '/', 'GET').then((route) => {
+        return router.route({
+                host: 'app4.example.com',
+                url: '/',
+                method: 'GET',
+                remote: 'remote.example.com',
+            }).then((route) => {
                 expect(route).toEqual({
                     ...routes[4],
                     target: 'http://etcd-target-app4.example.com',
                 });
+                expect(createHash).toBeCalled();
+                expect(hash.update)
+                    .toBeCalledWith('remote.example.com:app4.example.com');
+                expect(hash.digest)
+                    .toBeCalledWith();
                 expect(etcd.get).toBeCalledWith('backends/app4-3', true);
             });
     });

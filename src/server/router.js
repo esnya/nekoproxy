@@ -1,4 +1,5 @@
-import { Etcd } from './etcd';
+import {createHash} from 'crypto';
+import {Etcd} from './etcd';
 
 export class Router {
     constructor(config = {}) {
@@ -34,7 +35,17 @@ export class Router {
         return null;
     }
 
-    route(host, url, method) {
+    getBackend({etcd, backends}, {remote, host}) {
+        if (!backends) return etcd;
+
+        const hash = createHash('sha1');
+        hash.update(`${remote}:${host}`);
+        const n = hash.digest().readInt8(0) % backends + 1;
+
+        return `${etcd}-${n}`;
+    }
+
+    route({host, url, method, remote}) {
         return this
             .getRoutes()
             .then((routes) => {
@@ -44,9 +55,7 @@ export class Router {
                     return route;
                 }
 
-                const n = route.backends &&
-                    Math.floor(Math.random() * route.backends) + 1;
-                const backend = n ? `${route.etcd}-${n}` : route.etcd;
+                const backend = this.getBackend(route, {remote, host});
 
                 return this.etcd.get(`backends/${backend}`, true)
                     .then((node) => ({

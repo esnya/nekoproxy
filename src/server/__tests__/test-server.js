@@ -70,6 +70,9 @@ describe('Server', () => {
         req.headers = {
             host: 'app.example.com',
         };
+        req.socket = {
+            remoteAddress: '127.0.0.10',
+        };
         const res = new http.ServerResponse();
 
         server.router.route.mockReturnValueOnce(Promise.resolve({
@@ -83,7 +86,12 @@ describe('Server', () => {
             .calls[0][0](req, res);
 
         expect(server.router.route)
-            .toBeCalledWith('app.example.com', '/', 'GET');
+            .toBeCalledWith({
+                host: 'app.example.com',
+                url: '/',
+                method: 'GET',
+                remote: '127.0.0.10',
+            });
 
         return Promise.resolve();
     });

@@ -47,7 +47,12 @@ export class Server {
     }
 
     resolveRoute(req, res = null, cors = true) {
-        return this.router.route(req.headers.host, req.url, req.method)
+        return this.router.route({
+                host: req.headers.host,
+                url: req.url,
+                method: req.method,
+                remote: req.socket && req.socket.remoteAddress,
+            })
             .then((route) => {
                 if (!route || !(route.app in this.apps)) {
                     this.logger.debug('404', req.headers.host, req.url);
