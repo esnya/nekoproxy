@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Fixed
 - Handle internal server error
+- Error on load barancer
 
 ## [1.3.0] - 2016-05-23
 ### Added

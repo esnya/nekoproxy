@@ -40,7 +40,7 @@ export class Router {
 
         const hash = createHash('sha1');
         hash.update(`${remote}:${host}`);
-        const n = hash.digest().readInt8(0) % backends + 1;
+        const n = hash.digest().readUInt8(0) % backends + 1;
 
         return `${etcd}-${n}`;
     }

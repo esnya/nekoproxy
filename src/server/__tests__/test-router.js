@@ -155,7 +155,7 @@ describe('Router', () => {
     pit('routes as loadbarancer', () => {
         const hash = {
             update: jest.fn(),
-            digest: jest.fn().mockReturnValue(new Buffer([3 * 12 + 3 - 1])),
+            digest: jest.fn().mockReturnValue(new Buffer([3 * 45 + 3 - 1])),
         };
         hash.update.mockReturnValue(hash);
         createHash.mockReturnValue(hash);
