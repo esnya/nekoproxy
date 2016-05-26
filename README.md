@@ -38,6 +38,7 @@ NekoRPG front-end reverse proxy.
   - Twitter OAuth
 - Dynamic docker container linkage with etcd
   - Kind of ambassador pattern
+- Cross-Origin Resource Sharing (CORS)
 
 ## Requirements
 - Docker
