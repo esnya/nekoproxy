@@ -164,6 +164,8 @@ describe('Router', () => {
             Promise.resolve({ value: 'http://etcd-target-app4.example.com' })
         );
 
+        Date.now = jest.fn().mockReturnValue(1234.56 * 10 * 60 * 1000);
+
         return router.route({
                 host: 'app4.example.com',
                 url: '/',
@@ -176,7 +178,7 @@ describe('Router', () => {
                 });
                 expect(createHash).toBeCalled();
                 expect(hash.update)
-                    .toBeCalledWith('remote.example.com:app4.example.com');
+                    .toBeCalledWith('remote.example.com:app4.example.com:1234');
                 expect(hash.digest)
                     .toBeCalledWith();
                 expect(etcd.get).toBeCalledWith('backends/app4-3', true);
