@@ -39,7 +39,8 @@ export class Router {
         if (!backends) return etcd;
 
         const hash = createHash('sha1');
-        hash.update(`${remote}:${host}`);
+        const time = Math.floor(Date.now() / (10 * 60 * 1000));
+        hash.update(`${remote}:${host}:${time}`);
         const n = hash.digest().readUInt8(0) % backends + 1;
 
         return `${etcd}-${n}`;
