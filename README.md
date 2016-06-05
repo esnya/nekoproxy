@@ -111,8 +111,8 @@ HTTPS Resutst -> | tcp/443 | -+       |       +-> | App-B | -+               +--
 ```
 
 ## Configuration
-Configuration file is `/usr/src/app/config/local.json`.
-Default values are specified in [`config/default.json`](https://github.com/ukatama/nekoproxy/blob/master/config/default.json) and [`config/production.json`](https://github.com/ukatama/nekoproxy/blob/master/config/production.json)
+Configuration file is `/usr/src/app/config/local.yml`.
+Default values are specified in [`config/default.yml`](https://github.com/ukatama/nekoproxy/blob/master/config/default.yml) and [`config/production.yml`](https://github.com/ukatama/nekoproxy/blob/master/config/production.yml)
 
 
 | key       | type            | description                                    |
