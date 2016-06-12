@@ -1,0 +1,18 @@
+app:
+    guest: false
+    secret: <SECRET>
+database:
+    default:
+        client: mysql2
+        connection:
+            host: mysql
+            database: nekorpg
+            user: root
+            password: <MYSQL_ROOT_PASSWORD>
+redis:
+    host: redis
+session:
+    cookie:
+        domain: example.com
+    secret: <SECRET>
+    store: redis

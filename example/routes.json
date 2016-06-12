@@ -1,0 +1,12 @@
+[
+    {
+        "host": "chat.example.com",
+        "app": "nekorpg",
+        "etcd": "nekochat"
+    },
+    {
+        "host": "board.example.com",
+        "app": "nekorpg",
+        "etcd": "nekoboard"
+    }
+]
