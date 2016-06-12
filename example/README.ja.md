@@ -61,10 +61,10 @@
 
 ## 設定ファイルの作成
 
-- [`/path/to/nekoproxy.yml`](https://github.com/ukatama/nekoproxy/brob/master/example/nekoproxy.yml)
-- [`/path/to/routes.json`](https://github.com/ukatama/nekoproxy/brob/master/example/routes.json)
-- [`/path/to/nekochat.yml`](https://github.com/ukatama/nekoproxy/brob/master/example/nekochat.yml)
-- [`/path/to/nekoboard.yml`](https://github.com/ukatama/nekoproxy/brob/master/example/nekoboard.yml)
+- [`/path/to/nekoproxy.yml`](https://github.com/ukatama/nekoproxy/blob/master/example/nekoproxy.yml)
+- [`/path/to/routes.json`](https://github.com/ukatama/nekoproxy/blob/master/example/routes.json)
+- [`/path/to/nekochat.yml`](https://github.com/ukatama/nekoproxy/blob/master/example/nekochat.yml)
+- [`/path/to/nekoboard.yml`](https://github.com/ukatama/nekoproxy/blob/master/example/nekoboard.yml)
 
 ## コンテナの起動
 

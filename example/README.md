@@ -7,7 +7,7 @@
 - Twitter Authentication
 - TLS
 - Langs
-    - [日本語版](./Japanese)
+    - [日本語版](https://github.com/ukatama/nekoproxy/blob/master/example/README.ja.md)
 
 ## Sample Values
 
@@ -64,10 +64,10 @@
 
 ## Create Configuration Files
 
-- [`/path/to/nekoproxy.yml`](https://github.com/ukatama/nekoproxy/brob/master/example/nekoproxy.yml)
-- [`/path/to/routes.json`](https://github.com/ukatama/nekoproxy/brob/master/example/routes.json)
-- [`/path/to/nekochat.yml`](https://github.com/ukatama/nekoproxy/brob/master/example/nekochat.yml)
-- [`/path/to/nekoboard.yml`](https://github.com/ukatama/nekoproxy/brob/master/example/nekoboard.yml)
+- [`/path/to/nekoproxy.yml`](https://github.com/ukatama/nekoproxy/blob/master/example/nekoproxy.yml)
+- [`/path/to/routes.json`](https://github.com/ukatama/nekoproxy/blob/master/example/routes.json)
+- [`/path/to/nekochat.yml`](https://github.com/ukatama/nekoproxy/blob/master/example/nekochat.yml)
+- [`/path/to/nekoboard.yml`](https://github.com/ukatama/nekoproxy/blob/master/example/nekoboard.yml)
 
 ## Run Containers
 
