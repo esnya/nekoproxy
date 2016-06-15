@@ -161,9 +161,10 @@ Each of route is specified in an object consisting of the following keys:
 | url      | string (regexp) | URL matcher. optional. e.g. `"^/foo/bar[0-9]+$"`                                              |
 | methods  | array of string | Arrowed methods                                                                               |
 | app      | string          | Application ID                                                                                |
+| target   | string          | Set target address without etcd. e.g. `http://127.0.0.1:8080`                                 |
 | etcd     | string          | Key of the target address in etcd. Specified by `--env APP=<vlalue>` in [Connect](#Connect).  |
 | public   | boolean         | Set `true` to disable authentication. (Default: `false`)                                      |
-| backends | number          | Set number of backend instances to enable load barancing. Set null or 0 to disable LB.         |
+| backends | number          | Set number of backend instances to enable load barancing. Set null or 0 to disable LB.        |
 
 Route configurations can be write under `route` key of [configuration file](#Configuration).
 
@@ -198,6 +199,11 @@ N is an integral number from 1 on up.
     "app": "b",
     "etcd": "bar",
     "backends": 3
+  },
+  {
+    "host": "c.example.com",
+    "app": "c",
+    "target": "http://127.0.0.1:8080"
   }
 ]
 ```
