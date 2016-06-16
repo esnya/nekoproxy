@@ -10,9 +10,6 @@ describe('Server', () => {
 
     const ProxyServer = require('http-proxy');
 
-    const {Logger} = require('log4js/lib/logger');
-    const {getLogger} = require('log4js');
-
     const {
         createApps,
         App,
@@ -29,7 +26,6 @@ describe('Server', () => {
         app2: new App(),
     };
     it('listens as a http server', () => {
-        getLogger.mockReturnValue(new Logger());
         createApps.mockReturnValue(apps);
 
         metrics = new MetricCounter({
