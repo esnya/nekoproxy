@@ -4,6 +4,7 @@
   "description": "NekoRPG front-end reverse proxy with SNS-SSO.",
   "main": "lib/server",
   "scripts": {
+    "prestart": "node scripts/prestart.js",
     "start": "node .",
     "lint": "gulp lint",
     "build": "gulp build",
@@ -28,17 +29,14 @@
     "knex": "^0.11.1",
     "lodash": "^4.0.0",
     "log4js": "^0.6.29",
-    "mariasql": "^0.2.6",
     "material-ui": "^0.15.0",
-    "mysql2": "^0.15.8",
     "passport": "^0.3.2",
     "passport-twitter": "^1.0.3",
     "prom-client": "^3.3.0",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
     "request-promise": "^3.0.0",
-    "source-map-support": "^0.4.0",
-    "sqlite3": "^3.1.1"
+    "source-map-support": "^0.4.0"
   },
   "devDependencies": {
     "fluent-logger": "^1.1.0",

@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Changed
+- Remove SQL clients from package.json.
+    - They will automatically be installed in prestart.
+
 ## [1.3.1] - 2016-05-23
 ### Fixed
 - Handle internal server error
