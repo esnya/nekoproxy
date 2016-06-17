@@ -4,9 +4,19 @@ const { spawn } = require('child_process');
 const config = require('config');
 const { map, uniq } = require('lodash');
 
-const clients = uniq([
-    config.get('default.database.client'),
-].concat(map(config.get('apps'), (app) => app.get('database.client'))));
+const aliases = {
+    maria: 'mariasql',
+    madiadb: 'mariasql',
+    postgres: 'pq',
+    postgresql: 'pq',
+    sqlite: 'sqlite3',
+};
+
+const clients = uniq(
+    [config.get('default.database.client')]
+            .concat(map(config.get('apps'), (app) => app.get('database.client')))
+            .map((client) => aliases[client] || client)
+);
 
 const isInstalled = (client) => {
     try {
