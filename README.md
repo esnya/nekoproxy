@@ -46,14 +46,6 @@ NekoRPG front-end reverse proxy.
 - SQL Database
   - See also: [Knex.js](http://knexjs.org/)
 
-## Build
-```
-$ git clone https://github.com/ukatama/nekoproxy.git
-$ docker build -t ukatama/nekoproxy nekoproxy
-$ git clone https://github.com/ukatama/nekoetcd-connect.git
-$ docker build -t ukatama/nekoetcd-connect nekoetcd-connect
-```
-
 ## Run
 ```
 $ docker run -d --name redis redis
@@ -68,7 +60,7 @@ $ docker run -d --name nekoproxy \
     -v /path/to/cert.pem:/etc/certs/cert.pem:ro \
     -v /path/to/privkey.pem:/etc/certs/privkey.pem:ro \
     --env NODE_ENV=production
-    ukatama/nekoproxy
+    nekorpg/nekoproxy
 ```
 
 If you want to use Live-Configuration, see also routes -> Live-Configuration.
