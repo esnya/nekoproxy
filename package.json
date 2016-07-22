@@ -12,7 +12,7 @@
     "test": "gulp test",
     "version": "update-changelog && git add CHANGELOG.md",
     "watch": "gulp serve build test watch",
-    "production": "gulp test build"
+    "production": "gulp build"
   },
   "author": "ukatama",
   "license": "MIT",
